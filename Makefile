@@ -6,7 +6,7 @@
 #    By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/10 16:09:31 by hboissel          #+#    #+#              #
-#    Updated: 2023/04/10 16:22:55 by hboissel         ###   ########.fr        #
+#    Updated: 2023/09/18 16:55:57 by hboissel         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,7 +22,7 @@ OBJS_DIR    = obj/
 INCS_DIR    = inc/
 
 # Source files
-SRCS_FILES    = main.cpp
+SRCS_FILES    = main.cpp connection.cpp
 OBJS_FILES    = $(SRCS_FILES:.cpp=.o)
 
 # Paths
