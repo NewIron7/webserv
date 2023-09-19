@@ -12,4 +12,34 @@
 - [ ]  Gestion des requetes avec les sockets
 - [ ]  Parsing des requetes
 - [ ]  Creation de reponse
-- [ ]
+- [ ]  Gestion des CGI
+
+## Creation du coeur du programme
+
+Etre capable de recevoir et de l’analyser pour ensuite renvoyer la bonne reponse.
+
+### Fonctions utilisees
+
+```cpp
+//convertion local vers reseau (vers big-endian)
+short htons(short value);
+long htonl(long value);
+//convertion inverse (de big-endian)
+short ntohs(short value);
+long ntohl(long value);
+
+int socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+//AF_INET  pour ipv4, SOCK_STREAM pour TCP et IPPROTO_TCP pour TCP
+//retourne -1 lors d'une erreur
+int close(int socket) //pour fermer le socker qui est un simple fd
+```
+
+![Untitled](webserv%202b93ac00a413432b9f9fceb0abead6c5/Untitled.png)
+
+[C++ Confused by epoll and socket fd on Linux systems and async threads](https://stackoverflow.com/questions/66916835/c-confused-by-epoll-and-socket-fd-on-linux-systems-and-async-threads)
+
+Creation d’une classe tcp_server, celle-ci permet de creer un server tcp sur un port donne.
+
+Cette classe contiendra le fd du server tcp et les fd des differents clients.
+
+On pourra avec cela utiliser epoll pour gerer differents server en meme temps et identifier de quel server provient le fd actif.

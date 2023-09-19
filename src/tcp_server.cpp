@@ -6,16 +6,14 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/18 12:46:25 by hboissel          #+#    #+#             */
-/*   Updated: 2023/09/19 12:59:27 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/09/19 15:57:26 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "webserv.hpp"
-#include <iostream>
-#include <netinet/in.h>
 
 #define BUFFER_SIZE 64
 
-static int server;
+static std::vector<int> all_server;
 
 int	ft_err(int n)
 {
@@ -34,12 +32,17 @@ void init_sockaddr(int port, struct sockaddr_in &address)
 	address.sin_port = htons(port);
 }
 
+void	close_all_server(void)
+{
+	std::for_each(all_server.begin(), all_server.end(), close);
+}
+
 static void	sig_usr(int sign, siginfo_t *siginfo, void *ucontext)
 {
 	(void)sign;
 	(void)siginfo;
 	(void)ucontext;
-	close(server);
+	close_all_server();
 }
 
 void init_signal(void)
@@ -53,8 +56,8 @@ void init_signal(void)
 
 int	tcp_create(int port)
 {
-	server = socket(AF_INET, SOCK_STREAM, 0);
-	if (ft_err(server))
+	all_server.push_back(socket(AF_INET, SOCK_STREAM, 0));
+	if (ft_err(all_server.back()))
 		return (-1);
 
 	struct sockaddr_in address;
@@ -62,19 +65,20 @@ int	tcp_create(int port)
 	bzero((void*)&address, addr_size);
 
 	init_sockaddr(port, address);
-	if (ft_err(bind(server, (struct sockaddr *)&address, addr_size)))
+	if (ft_err(bind(all_server.back(), (struct sockaddr *)&address, addr_size)))
 		return (-1);
-	if (ft_err(listen(server, 3)))
+
+	if (ft_err(listen(all_server.back(), 3)))
 		return (-1);
 	std::cout << "@Listenning on port: " << port << std::endl;
 	return (0);
 }
 
-int tcp_connection(void)
+int tcp_connection(int server)
 {
 	int	new_connection;
 	int	bytesRead = BUFFER_SIZE;
-	char buf[BUFFER_SIZE];
+	char buf[BUFFER_SIZE + 1];
 	struct sockaddr_in address_connect;
 	socklen_t addr_connect_size = sizeof(address_connect);
 	while (1)
@@ -85,16 +89,18 @@ int tcp_connection(void)
 			break ;
 
 		std::cout << "@Client has been connected" << std::endl;
-		int t0 = ntohl(address_connect.sin_addr.s_addr) & 0x000000FF;
-		int t1 = ntohl(address_connect.sin_addr.s_addr) & 0x0000FF00;
-		int t2 = ntohl(address_connect.sin_addr.s_addr) & 0x00FF0000;
-		int t3 = ntohl(address_connect.sin_addr.s_addr) & 0xFF000000;
-		std::cout << t3 << "." << t2 << "." << t1 << "." << t0 << std::endl;
+		std::string request;
 		while (bytesRead == BUFFER_SIZE)
 		{
 			bytesRead = read(new_connection, buf, BUFFER_SIZE);
-			write(1, buf, bytesRead);
+			buf[bytesRead] = '\0';
+			request += buf;
 		}
+		std::cout << "@Request=>" << std::endl << request << std::endl;
+		//Parsing of Request to generate the right response
+		std::string response("HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!");
+		
+		write(new_connection, response.c_str(), response.size());
 
 		if (ft_err(bytesRead))
 			break ;
@@ -111,9 +117,9 @@ int	tcp_server(int port)
 	if (tcp_create(port))
 		return (-1);
 
-	if (tcp_connection())
+	if (tcp_connection(all_server.back()))
 		return (-1);
 
-	close(server);
+	close_all_server();
 	return (0);
 }
