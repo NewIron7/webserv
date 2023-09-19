@@ -1,20 +1,21 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   connection.cpp                                     :+:      :+:    :+:   */
+/*   tcp_server.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/18 12:46:25 by hboissel          #+#    #+#             */
-/*   Updated: 2023/09/18 19:55:31 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/09/19 12:59:27 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "webserv.hpp"
 #include <iostream>
 #include <netinet/in.h>
 
-int server;
-int	new_connection;
+#define BUFFER_SIZE 64
+
+static int server;
 
 int	ft_err(int n)
 {
@@ -38,52 +39,81 @@ static void	sig_usr(int sign, siginfo_t *siginfo, void *ucontext)
 	(void)sign;
 	(void)siginfo;
 	(void)ucontext;
-	std::cout << "SERVER FD: " << server << std::endl;
-	close(new_connection);
 	close(server);
 }
 
-int	do_socket(void)
+void init_signal(void)
 {
-	server = socket(AF_INET, SOCK_STREAM, 0);
-	if (ft_err(server))
-		return (-1);
-	std::cout << "SERVER FD: " << server << std::endl;
-
 	struct sigaction	signal_action;
 	signal_action.sa_sigaction = sig_usr;
 	sigemptyset(&signal_action.sa_mask);
 	signal_action.sa_flags = SA_SIGINFO;
 	sigaction(SIGINT, &signal_action, NULL);
+}
+
+int	tcp_create(int port)
+{
+	server = socket(AF_INET, SOCK_STREAM, 0);
+	if (ft_err(server))
+		return (-1);
 
 	struct sockaddr_in address;
-	init_sockaddr(4245, address);
-	if (ft_err(bind(server, (struct sockaddr *)&address, sizeof(address))))
-		return (-1);
+	socklen_t addr_size = sizeof(address);
+	bzero((void*)&address, addr_size);
 
-	//3 is the number of allowed connection in the queue
+	init_sockaddr(port, address);
+	if (ft_err(bind(server, (struct sockaddr *)&address, addr_size)))
+		return (-1);
 	if (ft_err(listen(server, 3)))
 		return (-1);
+	std::cout << "@Listenning on port: " << port << std::endl;
+	return (0);
+}
 
-	int	bytesRead = 1;
-	char buf[64];
+int tcp_connection(void)
+{
+	int	new_connection;
+	int	bytesRead = BUFFER_SIZE;
+	char buf[BUFFER_SIZE];
 	struct sockaddr_in address_connect;
 	socklen_t addr_connect_size = sizeof(address_connect);
-	int	new_connection = accept(server, (struct sockaddr *)&address_connect, &addr_connect_size);
-	while (new_connection != -1)
+	while (1)
 	{
-		std::cout << "Client has been connected" << std::endl;
-		while (bytesRead > 0)
+		bzero((void *)&address_connect, addr_connect_size);
+		new_connection = accept(server, (struct sockaddr *)&address_connect, &addr_connect_size);
+		if (ft_err(new_connection))
+			break ;
+
+		std::cout << "@Client has been connected" << std::endl;
+		int t0 = ntohl(address_connect.sin_addr.s_addr) & 0x000000FF;
+		int t1 = ntohl(address_connect.sin_addr.s_addr) & 0x0000FF00;
+		int t2 = ntohl(address_connect.sin_addr.s_addr) & 0x00FF0000;
+		int t3 = ntohl(address_connect.sin_addr.s_addr) & 0xFF000000;
+		std::cout << t3 << "." << t2 << "." << t1 << "." << t0 << std::endl;
+		while (bytesRead == BUFFER_SIZE)
 		{
-			bytesRead = read(new_connection, buf, 64);
+			bytesRead = read(new_connection, buf, BUFFER_SIZE);
 			write(1, buf, bytesRead);
 		}
-		std::cout << "****END****" << std::endl;
-		close(new_connection);
-		new_connection = accept(server, (struct sockaddr *)&address_connect, &addr_connect_size);
+
+		if (ft_err(bytesRead))
+			break ;
+		bytesRead = BUFFER_SIZE;
+		std::cout << "@Disconnection" << std::endl;
 	}
-	close(server);
-	if (ft_err(new_connection))
+	return (-1);
+}
+
+int	tcp_server(int port)
+{
+	init_signal();
+
+	if (tcp_create(port))
 		return (-1);
+
+	if (tcp_connection())
+		return (-1);
+
+	close(server);
 	return (0);
 }

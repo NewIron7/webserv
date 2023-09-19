@@ -6,7 +6,7 @@
 #    By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/10 16:09:31 by hboissel          #+#    #+#              #
-#    Updated: 2023/09/18 16:55:57 by hboissel         ###   ########.fr        #
+#    Updated: 2023/09/19 12:38:25 by hboissel         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,20 +14,23 @@ NAME        = webserv
 
 CC            = c++
 
-CFLAGS        = -Wall -Wextra -Werror -std=c++98 -pedantic-errors
+CFLAGS        = -g3 -Wall -Wextra -Werror -std=c++98 -pedantic-errors
 
 # Directories
 SRCS_DIR    = src/
-OBJS_DIR    = obj/
+OBJS_DIR    = bin/
 INCS_DIR    = inc/
+DEPS_DIR	= bin/
 
 # Source files
-SRCS_FILES    = main.cpp connection.cpp
+SRCS_FILES    = main.cpp tcp_server.cpp
 OBJS_FILES    = $(SRCS_FILES:.cpp=.o)
+DEPS_FILES    = $(SRCS_FILES:.cpp=.d)
 
 # Paths
 SRCS        = $(addprefix $(SRCS_DIR), $(SRCS_FILES))
 OBJS        = $(addprefix $(OBJS_DIR), $(OBJS_FILES))
+DEPS        = $(addprefix $(DEPS_DIR), $(DEPS_FILES))
 
 # Colors / Actions
 RESET        = \033[0m
@@ -74,5 +77,7 @@ fclean:        clean
 	fi;
 
 re:            fclean all
+
+-include $(DEPS)
 
 .PHONY:        all clean fclean re

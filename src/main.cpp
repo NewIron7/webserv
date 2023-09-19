@@ -6,12 +6,12 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/18 16:44:05 by hboissel          #+#    #+#             */
-/*   Updated: 2023/09/18 16:44:55 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/09/19 12:27:18 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "webserv.hpp"
 
 int	main(void)
 {
-	return (do_socket());
+	return (tcp_server(4245));
 }

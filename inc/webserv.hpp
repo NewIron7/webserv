@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/18 12:00:41 by hboissel          #+#    #+#             */
-/*   Updated: 2023/09/18 16:45:42 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/09/19 12:25:04 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef WEBSERV_HPP
@@ -25,6 +25,6 @@
 # include <sys/stat.h>
 # include <dirent.h>
 
-int	do_socket(void);
+int	tcp_server(int port);
 
 #endif
