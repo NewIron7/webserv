@@ -34,7 +34,7 @@ int socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 int close(int socket) //pour fermer le socker qui est un simple fd
 ```
 
-![Untitled](webserv%202b93ac00a413432b9f9fceb0abead6c5/Untitled.png)
+![epollSchema](servWeb/epollSchema.png)
 
 [C++ Confused by epoll and socket fd on Linux systems and async threads](https://stackoverflow.com/questions/66916835/c-confused-by-epoll-and-socket-fd-on-linux-systems-and-async-threads)
 
