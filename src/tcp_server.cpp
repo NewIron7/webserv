@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/18 12:46:25 by hboissel          #+#    #+#             */
-/*   Updated: 2023/09/19 15:57:26 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/09/20 15:51:21 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "webserv.hpp"
@@ -84,11 +84,12 @@ int tcp_connection(int server)
 	while (1)
 	{
 		bzero((void *)&address_connect, addr_connect_size);
-		new_connection = accept(server, (struct sockaddr *)&address_connect, &addr_connect_size);
+		new_connection = accept(server, (struct sockaddr *)&address_connect,
+				&addr_connect_size);
 		if (ft_err(new_connection))
 			break ;
 
-		std::cout << "@Client has been connected" << std::endl;
+		std::cout << "@Client has been connected " << new_connection << std::endl;
 		std::string request;
 		while (bytesRead == BUFFER_SIZE)
 		{
