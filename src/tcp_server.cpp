@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/18 12:46:25 by hboissel          #+#    #+#             */
-/*   Updated: 2023/09/20 15:51:21 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/09/21 17:40:01 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "webserv.hpp"
@@ -107,6 +107,7 @@ int tcp_connection(int server)
 			break ;
 		bytesRead = BUFFER_SIZE;
 		std::cout << "@Disconnection" << std::endl;
+		close(new_connection);
 	}
 	return (-1);
 }

@@ -6,50 +6,89 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 14:50:50 by hboissel          #+#    #+#             */
-/*   Updated: 2023/09/20 17:19:33 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/09/21 17:19:29 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "TcpServer.hpp"
 
-
-TcpServer::TcpServer(unsigned int port): _port(port)
+TcpServer::TcpServer(void)
 {
-	this->create(port);
+	this->_epfd = epoll_create1(0);
+	if (this->_epfd == -1)
+		throw TcpServer::InternalError();
 }
 
 TcpServer::~TcpServer(void)
 {
-	close(this->_server.socket);
-	std::cout << "@Server on port " << this->_port << "stopped" << std::endl;
+	for (std::vector<t_connect>::iterator it = this->_streams.begin();
+			it != this->_streams.end(); it++)
+	{
+		close(it->socket);
+	}
 }
 
-void	TcpServer::add_client(void)
+void	TcpServer::run(void)
 {
-	//accept a new client connection
+	//running loop of servers
 }
 
-void	TcpServer::_create(unsigned int port)
+void	TcpServer::_add_client(const t_connect & server)
 {
-	this->_server.socket = socket(AF_INET, SOCK_STREAM, 0);
-	if (this->_server.socket == -1)
-		throw this->InternalError();
+	t_connect	client;
 
-	this->_server.size = sizeof(this->_server.info);
-	memset((void*)&this->_server.info, 0, this->_server.size);
+	client.main = false;
+	client.server = server;
+	client.size = sizeof(client.info);
+	memset((void*)&client.info, 0, client.size);
+	client.socket = accept(client.server.socket, (struct sockaddr *)&client.info,
+			&client.size);
+	if (client.socket == -1)
+		throw TcpServer::InternalError();
+	this->_streams.push_back(client);
+
+	struct epoll_event	event;
+	event.data.ptr = reinterpret_cast<void*>&this->_streams.back();
+	this->_events.push_back(event);
+	if (epoll_ctl(this->_epfd, EPOLL_CTL_ADD, server.socket,
+				&this->_events.back()) == -1)
+		throw TcpServer::InternalError();
+}
+
+void	TcpServer::create(unsigned int port)
+{
+	t_connect	server;
+	server.main = true;
+	server.server = server;
+	server.port = port;
+	server.socket = socket(AF_INET, SOCK_STREAM, 0);
+	if (server.socket == -1)
+		throw TcpServer::InternalError();
+
+	server.size = sizeof(server.info);
+	memset((void*)&server.info, 0, server.size);
 	
-	this->_server.info.sin_family = AF_INET;
-	this->_server.info.sin_addr.s_addr = htonl(INADDR_ANY);
-	this->_server.info.sin_port = htons(port);
+	server.info.sin_family = AF_INET;
+	server.info.sin_addr.s_addr = htonl(INADDR_ANY);
+	server.info.sin_port = htons(port);
 
-	if (bind(this->_server.socket, (struct sockaddr *)&this->_server.info,
-				this->_server.size) == -1)
-		throw this->InternalError();
-	if (listen(this->_server.socket, MAXIREQ) == -1)
-		throw this->InternalError();
-	std::cout << "@Server is listenning on port: " << port << std::endl;
+	if (bind(server.socket, (struct sockaddr *)&server.info,
+				server.size) == -1)
+		throw TcpServer::InternalError();
+	if (listen(server.socket, MAXIREQ) == -1)
+		throw TcpServer::InternalError();
+	std::cout << "@Server [" << server.socket << "] is listenning on port: "
+		<< port << std::endl;
+	this->_streams.push_back(server);
+
+	struct epoll_event	event;
+	event.data.ptr = reinterpret_cast<void*>&this->_streams.back();
+	this->_events.push_back(event);
+	if (epoll_ctl(this->_epfd, EPOLL_CTL_ADD, server.socket,
+				&this->_events.back()) == -1)
+		throw TcpServer::InternalError();
 }
 
-const char *TcpServer::InternalError::what(void) const throw
+const char *TcpServer::InternalError::what(void) const throw()
 {
 	return (strerror(errno));
 }
