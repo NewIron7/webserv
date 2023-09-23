@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/23 12:19:06 by hboissel          #+#    #+#             */
-/*   Updated: 2023/09/23 14:04:27 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/09/23 18:28:10 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Sockets.hpp"
@@ -16,14 +16,7 @@ Sockets::Sockets(void):
 {
 	this->size = sizeof(this->info);
 	memset((void*)&this->info, 0, this->size);
-	this->event.events = EPOLLIN | EPOLLOUT;
-
-	if (this->main)
-	{
-		this->info.sin_family = AF_INET;
-		this->info.sin_addr.s_addr = htonl(INADDR_ANY);
-		this->info.sin_port = htons(port);
-	}
+	this->event.events = EPOLLIN;
 }
 
 Sockets::~Sockets(void)
@@ -56,4 +49,16 @@ void	Sockets::setup(int sock, int sfd, int sp, bool m)
 	this->main = m;
 	this->server = sfd;
 	this->port = sp;
+	
+	if (this->main)
+	{
+		this->info.sin_family = AF_INET;
+		this->info.sin_addr.s_addr = htonl(INADDR_ANY);
+		this->info.sin_port = htons(port);
+	}
+}
+
+const char *Sockets::InternalError::what(void) const throw()
+{
+	return (strerror(errno));
 }

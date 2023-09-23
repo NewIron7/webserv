@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/23 12:04:20 by hboissel          #+#    #+#             */
-/*   Updated: 2023/09/23 14:03:36 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/09/23 17:26:24 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef SOCKETS_HPP
@@ -17,6 +17,7 @@
 # include <cstring>
 # include <sys/epoll.h>
 # include <arpa/inet.h>
+# include <cerrno>
 
 class Sockets
 {
@@ -36,6 +37,12 @@ class Sockets
 		socklen_t			size;
 		unsigned int		port;
 		struct epoll_event	event;
+	private:
+		class InternalError: public std::exception
+		{
+			public:
+				virtual const char *what(void) const throw();
+		};
 };
 
 #endif
