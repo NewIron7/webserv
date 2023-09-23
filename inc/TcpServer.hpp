@@ -6,35 +6,27 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 14:27:01 by hboissel          #+#    #+#             */
-/*   Updated: 2023/09/21 17:21:31 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/09/23 13:34:02 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef TCPSERVER_HPP
 # define TCPSERVER_HPP
 
 # define MAXIREQ 64
+# define MAXEVENT 16
 
 # include <iostream>
-# include <vector>
+# include <map>
 # include <cstring>
 # include <cerrno>
 # include <algorithm>
+# include <iomanip>
 
 # include <unistd.h>
 # include <arpa/inet.h>
 # include <sys/epoll.h>
 
-typedef struct s_connect t_connect;
-
-struct s_connect
-{
-	bool				main;
-	struct s_connect	&server;
-	int					socket;
-	struct sockaddr_in	info;
-	socklen_t			size;
-	unsigned int		port;
-};
+# include "Sockets.hpp"
 
 class TcpServer
 {
@@ -45,11 +37,11 @@ class TcpServer
 		void	run(void);
 		void	create(unsigned int port);
 	private:
-		void	_add_client(const t_connect & server);
+		void	_add_client(const int &fdServer);
+		void	_processEvent(struct epoll_event &ev);
 
-		int								_epfd;
-		std::vector<t_connect>			_streams;
-		std::vector<struct epoll_event>	_events;
+		int									_epfd;
+		std::map<int, Sockets>				_streams;
 
 		class InternalError: public std::exception
 		{
