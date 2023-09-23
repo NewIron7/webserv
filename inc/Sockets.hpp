@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/23 12:04:20 by hboissel          #+#    #+#             */
-/*   Updated: 2023/09/23 17:26:24 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/09/23 20:24:13 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef SOCKETS_HPP
@@ -18,6 +18,7 @@
 # include <sys/epoll.h>
 # include <arpa/inet.h>
 # include <cerrno>
+# include <fcntl.h>
 
 class Sockets
 {
@@ -29,6 +30,7 @@ class Sockets
 
 
 		void	setup(int sock, int sfd, int sp, bool m = false);
+		void	changeEvents(uint32_t ev, int epfd);
 
 		bool				main;
 		int					server;
@@ -37,6 +39,8 @@ class Sockets
 		socklen_t			size;
 		unsigned int		port;
 		struct epoll_event	event;
+		std::string			request;
+		bool				rDone;
 	private:
 		class InternalError: public std::exception
 		{
