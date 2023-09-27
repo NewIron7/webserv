@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/23 12:04:20 by hboissel          #+#    #+#             */
-/*   Updated: 2023/09/27 19:33:12 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/09/27 20:22:22 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef SOCKETS_HPP
@@ -43,6 +43,7 @@ class Sockets
 		bool				reqGot;
 		std::string			response;
 		bool				resGen;
+		bool				resSent;
 	private:
 		class InternalError: public std::exception
 		{

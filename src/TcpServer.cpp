@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 14:50:50 by hboissel          #+#    #+#             */
-/*   Updated: 2023/09/27 19:33:58 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/09/27 20:28:34 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "TcpServer.hpp"
@@ -30,6 +30,11 @@ void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
 
 	std::cout << "[] EPOLLOUT event" << std::endl;
 	
+	if (client.resSent)
+	{
+		std::cout << "\033[33m[-] Response already sent\033[0m" << std::endl;
+		return ;
+	}
 	if (client.reqGot == false)
 	{
 		std::cout << "[-] No request to process" << std::endl;
@@ -39,28 +44,36 @@ void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
 	std::string response;
 	if (client.resGen == false)
 	{
-		std::cout << "[+] Generating response" << std::endl;
-		
+		std::cout << "\033[33m[+] Generating response\033[0m" << std::endl;
+		std::cout << "\033[35m[] Request ->\033[0m" << std::endl;
+		std::cout << "\033[2m" << client.request << "\033[0m" << std::endl;
+
+
 		response = "HTTP/1.1 200 OK\nContent-Type: text/plain\n";
 		response += "Content-Length: 12\n\nHello world!";
 		
 		client.response = response;
 		client.resGen = true;
+		
+		std::cout << "\033[35m[] Response ->\033[0m" << std::endl;
+		std::cout << "\033[2m" << client.response << "\033[0m" << std::endl;
 	}
 	
 	int	err = write(client.socket, client.response.c_str(),
 			client.response.size());
 	if (err == -1)
 	{
-		std::cout << "[#] Failed to sent response" << std::endl;
+		std::cout << "\033[35m[#] Failed to sent response\033[0m" << std::endl;
 	}
 	else if (err < static_cast<int>(response.size()))
 	{
+		std::cout << "\033[35m[#] Failed to sent response\033[0m" << std::endl;
 		//we can do something when write didnt succeed to send the whole response
 	}
 	else
 	{
-		std::cout << "[+] Response succesfully sent to client" << std::endl;
+		client.resSent = true;
+		std::cout << "\033[32m[+] Response succesfully sent to client\033[0m" << std::endl;
 	}
 }
 
@@ -71,8 +84,8 @@ void	TcpServer::_processEPOLLIN(struct epoll_event &ev)
 			&& this->_streams[ev.data.fd].main)
 	{
 		Sockets &server = this->_streams[ev.data.fd];
-		std::cout << "[+] New connection from port " << server.port
-			<< " on server [ " << server.socket << " ]" << std::endl;
+		std::cout << "\033[32;1m[+] New connection from port " << server.port
+			<< " on server [ " << server.socket << " ]\033[0m" << std::endl;
 		this->_add_client(server.socket);
 	}
 	else
@@ -92,9 +105,10 @@ void	TcpServer::_processEPOLLIN(struct epoll_event &ev)
 		{
 			buf[bytesRead] = '\0';
 			client.request += buf;
-			std::cout << "[+] " << bytesRead << " bytes read" << std::endl;
+			std::cout << "\033[36m[+] " << bytesRead << " bytes read\033[0m" << std::endl;
 			client.reqGot = true;
 			client.resGen = false;
+			client.resSent = false;
 		}
 	}
 }
@@ -110,13 +124,13 @@ void	TcpServer::_processEPOLLHUP(struct epoll_event &ev)
 {
 	std::cout << "[] EPOLLHUP event" << std::endl;
 	Sockets &client = this->_streams[ev.data.fd];
-	std::cout << "[-] [ " << client.socket << " ] disconnected" << std::endl;
+	std::cout << "\033[31m[-] [ " << client.socket << " ] disconnected\033[0m" << std::endl;
 	this->_remove_client(client);
 }
 
 void	TcpServer::_processEvent(struct epoll_event &ev)
 {
-	std::cout << "@Processing of an event from fd [ " << ev.data.fd << " ]"
+	std::cout << "\033[4m@Processing of an event from fd [ " << ev.data.fd << " ]\033[0m"
 		<< std::endl;	
 	std::cout << "[] event is ";
 	std::cout << std::hex << ev.events << std::dec << " from fd [ " << ev.data.fd << " ]"
@@ -145,14 +159,11 @@ void	TcpServer::run(void)
 		evNb = 0;
 		memset((void*)evlist, 0, sizeof(evlist));
 
-		std::cout << "@Waiting for events" << std::endl;
-		evNb = epoll_wait(this->_epfd, evlist, MAXEVENT, 20000);
+		std::cout << "\033[1m@Waiting for events\033[0m" << std::endl;
+		evNb = epoll_wait(this->_epfd, evlist, MAXEVENT, TEVENT);
 		std::cout << "[] evNb: " << evNb << std::endl;
 		if (evNb == -1)
-		{
-			std::cout << "Erreur epoll_wait" << std::endl;
 			throw TcpServer::InternalError();
-		}
 		if (!evNb)
 			continue ;
 		for (int i = 0; i < evNb; i++)
@@ -207,8 +218,8 @@ void	TcpServer::create(unsigned int port)
 	if (listen(server.socket, MAXIREQ) == -1)
 		throw TcpServer::InternalError();
 
-	std::cout << "@Server [ " << server.socket << " ] is listenning on port: "
-		<< server.port << std::endl;
+	std::cout << "\033[44m@Server [ " << server.socket << " ] is listenning on port: "
+		<< server.port << "\033[0m" << std::endl;
 
 	if (epoll_ctl(this->_epfd, EPOLL_CTL_ADD, server.socket,
 				&(this->_streams[server.socket].event)) == -1)
@@ -217,5 +228,8 @@ void	TcpServer::create(unsigned int port)
 
 const char *TcpServer::InternalError::what(void) const throw()
 {
-	return (strerror(errno));
+	std::string err = "\033[41;5m";
+	err += strerror(errno);
+	err += "\033[0m";
+	return (err.c_str());
 }

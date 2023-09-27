@@ -6,13 +6,14 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 14:27:01 by hboissel          #+#    #+#             */
-/*   Updated: 2023/09/27 18:14:45 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/09/27 19:42:57 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef TCPSERVER_HPP
 # define TCPSERVER_HPP
 
 # define MAXIREQ 64
+# define TEVENT 30000
 # define MAXEVENT 16
 # define BUFFER_SIZE 64
 

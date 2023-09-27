@@ -6,13 +6,14 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/23 12:19:06 by hboissel          #+#    #+#             */
-/*   Updated: 2023/09/27 19:33:36 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/09/27 20:22:43 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Sockets.hpp"
 
 Sockets::Sockets(void):
 	main(false), server(-1), socket(-1), port(-1), reqGot(false), resGen(false)
+	,resSent(false)
 {
 	this->size = sizeof(this->info);
 	memset((void*)&this->info, 0, this->size);
@@ -77,5 +78,8 @@ void	Sockets::changeEvents(uint32_t ev, int epfd)
 
 const char *Sockets::InternalError::what(void) const throw()
 {
-	return (strerror(errno));
+	std::string err = "\033[31m";
+	err += strerror(errno);
+	err += "\033[0m";
+	return (err.c_str());
 }
