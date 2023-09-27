@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 14:50:50 by hboissel          #+#    #+#             */
-/*   Updated: 2023/09/23 20:28:56 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/09/27 19:33:58 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "TcpServer.hpp"
@@ -26,16 +26,33 @@ TcpServer::~TcpServer(void)
 
 void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
 {
-	std::cout << "[] EPOLLOUT event" << std::endl;
-	Sockets &client = this->_streams[ev.data.fd];
-	std::string response("HTTP/1.1 200 OK\nContent-Type: text/plain\n");
-	response += "Content-Length: 12\n\nHello world!";
+	Sockets	&client = this->_streams[ev.data.fd];
 
-	int	err = write(client.socket, response.c_str(), response.size());
+	std::cout << "[] EPOLLOUT event" << std::endl;
+	
+	if (client.reqGot == false)
+	{
+		std::cout << "[-] No request to process" << std::endl;
+		return ;
+	}
+
+	std::string response;
+	if (client.resGen == false)
+	{
+		std::cout << "[+] Generating response" << std::endl;
+		
+		response = "HTTP/1.1 200 OK\nContent-Type: text/plain\n";
+		response += "Content-Length: 12\n\nHello world!";
+		
+		client.response = response;
+		client.resGen = true;
+	}
+	
+	int	err = write(client.socket, client.response.c_str(),
+			client.response.size());
 	if (err == -1)
 	{
-		if (errno != EAGAIN)
-			throw TcpServer::InternalError();
+		std::cout << "[#] Failed to sent response" << std::endl;
 	}
 	else if (err < static_cast<int>(response.size()))
 	{
@@ -44,7 +61,6 @@ void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
 	else
 	{
 		std::cout << "[+] Response succesfully sent to client" << std::endl;
-		client.changeEvents(EPOLLIN, this->_epfd);
 	}
 }
 
@@ -62,33 +78,40 @@ void	TcpServer::_processEPOLLIN(struct epoll_event &ev)
 	else
 	{
 		Sockets	&client = this->_streams[ev.data.fd];
+
 		char	buf[BUFFER_SIZE + 1];
 		memset((void*)buf, 0, BUFFER_SIZE + 1);
 
 		int	bytesRead = read(client.socket, buf, BUFFER_SIZE);
 		if (bytesRead == -1)
 		{
-			if (errno == EAGAIN)
-				client.rDone = true;
-			else
-				throw TcpServer::InternalError();
+			client.reqGot = false;
+			std::cout << "[#] Failed to read request" << std::endl;
 		}
-		else if (bytesRead == 0)
-			client.rDone = true;
 		else
 		{
 			buf[bytesRead] = '\0';
 			client.request += buf;
 			std::cout << "[+] " << bytesRead << " bytes read" << std::endl;
-		}
-		if (client.rDone)
-		{
-			std::cout << "[*] Full request received:" << std::endl;
-			std::cout << client.request << std::endl;
-			client.changeEvents(EPOLLOUT, this->_epfd);
-			client.rDone = false;
+			client.reqGot = true;
+			client.resGen = false;
 		}
 	}
+}
+
+void	TcpServer::_processEPOLLERR(struct epoll_event &ev)
+{
+	std::cout << "[] EPOLLERR event" << std::endl;
+	Sockets &client = this->_streams[ev.data.fd];
+	this->_remove_client(client);
+}
+
+void	TcpServer::_processEPOLLHUP(struct epoll_event &ev)
+{
+	std::cout << "[] EPOLLHUP event" << std::endl;
+	Sockets &client = this->_streams[ev.data.fd];
+	std::cout << "[-] [ " << client.socket << " ] disconnected" << std::endl;
+	this->_remove_client(client);
 }
 
 void	TcpServer::_processEvent(struct epoll_event &ev)
@@ -96,9 +119,15 @@ void	TcpServer::_processEvent(struct epoll_event &ev)
 	std::cout << "@Processing of an event from fd [ " << ev.data.fd << " ]"
 		<< std::endl;	
 	std::cout << "[] event is ";
-	std::cout << std::hex << ev.events << " from fd [ " << ev.data.fd << " ]"
-		<<std::endl;
-	if ((ev.events & EPOLLIN) == EPOLLIN)
+	std::cout << std::hex << ev.events << std::dec << " from fd [ " << ev.data.fd << " ]"
+		<< std::endl;
+	if ((ev.events & EPOLLHUP) == EPOLLHUP
+			|| (ev.events & EPOLLRDHUP) == EPOLLRDHUP)
+		this->_processEPOLLHUP(ev);
+	else if ((ev.events & EPOLLERR) == EPOLLERR)
+		this->_processEPOLLERR(ev);
+	else if ((ev.events & EPOLLIN) == EPOLLIN
+			|| (ev.events & EPOLLPRI) == EPOLLPRI)
 		this->_processEPOLLIN(ev);
 	else if ((ev.events & EPOLLOUT) == EPOLLOUT)
 		this->_processEPOLLOUT(ev);
@@ -120,7 +149,10 @@ void	TcpServer::run(void)
 		evNb = epoll_wait(this->_epfd, evlist, MAXEVENT, 20000);
 		std::cout << "[] evNb: " << evNb << std::endl;
 		if (evNb == -1)
+		{
+			std::cout << "Erreur epoll_wait" << std::endl;
 			throw TcpServer::InternalError();
+		}
 		if (!evNb)
 			continue ;
 		for (int i = 0; i < evNb; i++)
@@ -136,14 +168,28 @@ void	TcpServer::_add_client(const int &fdServer)
 
 	int	clientFd = accept(fdServer, (struct sockaddr *)&info, &size);
 	if (clientFd == -1)
+	{
+		if ((errno == EAGAIN) || (errno == EWOULDBLOCK))
+			return ;
 		throw TcpServer::InternalError();
+	}
 
 	this->_streams[clientFd].info = info;
-	this->_streams[clientFd].setup(clientFd, fdServer, -1, false);
 
-	if (epoll_ctl(this->_epfd, EPOLL_CTL_ADD, clientFd,
-				&(this->_streams[clientFd].event)) == -1)
+	Sockets &client = this->_streams[clientFd];
+	client.setup(clientFd, fdServer, -1, false);
+
+	if (epoll_ctl(this->_epfd, EPOLL_CTL_ADD, client.socket,
+				&client.event) == -1)
 		throw TcpServer::InternalError();
+}
+
+void	TcpServer::_remove_client(Sockets &client)
+{
+	if (epoll_ctl(this->_epfd, EPOLL_CTL_DEL, client.socket,
+				&client.event) == -1)
+		throw TcpServer::InternalError();
+	this->_streams.erase(client.socket);
 }
 
 void	TcpServer::create(unsigned int port)
@@ -162,7 +208,7 @@ void	TcpServer::create(unsigned int port)
 		throw TcpServer::InternalError();
 
 	std::cout << "@Server [ " << server.socket << " ] is listenning on port: "
-		<< port << std::endl;
+		<< server.port << std::endl;
 
 	if (epoll_ctl(this->_epfd, EPOLL_CTL_ADD, server.socket,
 				&(this->_streams[server.socket].event)) == -1)

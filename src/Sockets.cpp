@@ -6,17 +6,19 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/23 12:19:06 by hboissel          #+#    #+#             */
-/*   Updated: 2023/09/23 20:24:39 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/09/27 19:33:36 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Sockets.hpp"
 
 Sockets::Sockets(void):
-	main(false), server(-1), socket(-1), port(-1), rDone(false)
+	main(false), server(-1), socket(-1), port(-1), reqGot(false), resGen(false)
 {
 	this->size = sizeof(this->info);
 	memset((void*)&this->info, 0, this->size);
-	this->event.events = EPOLLIN;
+	this->event.events = EPOLLIN | EPOLLOUT;
+	this->event.events |= EPOLLRDHUP;
+	this->event.events |= EPOLLPRI;
 }
 
 Sockets::~Sockets(void)

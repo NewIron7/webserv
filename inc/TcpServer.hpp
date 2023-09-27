@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 14:27:01 by hboissel          #+#    #+#             */
-/*   Updated: 2023/09/23 20:21:01 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/09/27 18:14:45 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef TCPSERVER_HPP
@@ -39,9 +39,13 @@ class TcpServer
 		void	create(unsigned int port);
 	private:
 		void	_add_client(const int &fdServer);
+		void	_remove_client(Sockets &client);
+		
 		void	_processEvent(struct epoll_event &ev);
 		void	_processEPOLLIN(struct epoll_event &ev);		
 		void	_processEPOLLOUT(struct epoll_event &ev);		
+		void	_processEPOLLERR(struct epoll_event &ev);
+		void	_processEPOLLHUP(struct epoll_event &ev);
 
 		int									_epfd;
 		std::map<int, Sockets>				_streams;
