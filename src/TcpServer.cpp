@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 14:50:50 by hboissel          #+#    #+#             */
-/*   Updated: 2023/09/27 20:28:34 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/09/28 13:59:00 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "TcpServer.hpp"
@@ -15,7 +15,7 @@ TcpServer::TcpServer(void)
 {
 	this->_epfd = epoll_create1(0);
 	if (this->_epfd == -1)
-		throw TcpServer::InternalError();
+		throw InternalError();
 }
 
 TcpServer::~TcpServer(void)
@@ -28,11 +28,11 @@ void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
 {
 	Sockets	&client = this->_streams[ev.data.fd];
 
-	std::cout << "[] EPOLLOUT event" << std::endl;
+	//std::cout << "[] EPOLLOUT event" << std::endl;
 	
 	if (client.resSent)
 	{
-		std::cout << "\033[33m[-] Response already sent\033[0m" << std::endl;
+		//std::cout << "\033[33m[-] Response already sent\033[0m" << std::endl;
 		return ;
 	}
 	if (client.reqGot == false)
@@ -54,6 +54,7 @@ void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
 		
 		client.response = response;
 		client.resGen = true;
+		client.request.clear();
 		
 		std::cout << "\033[35m[] Response ->\033[0m" << std::endl;
 		std::cout << "\033[2m" << client.response << "\033[0m" << std::endl;
@@ -130,11 +131,11 @@ void	TcpServer::_processEPOLLHUP(struct epoll_event &ev)
 
 void	TcpServer::_processEvent(struct epoll_event &ev)
 {
-	std::cout << "\033[4m@Processing of an event from fd [ " << ev.data.fd << " ]\033[0m"
-		<< std::endl;	
-	std::cout << "[] event is ";
-	std::cout << std::hex << ev.events << std::dec << " from fd [ " << ev.data.fd << " ]"
-		<< std::endl;
+	//std::cout << "\033[4m@Processing of an event from fd [ " << ev.data.fd << " ]\033[0m"
+	//	<< std::endl;	
+	//std::cout << "[] event is ";
+	//std::cout << std::hex << ev.events << std::dec << " from fd [ " << ev.data.fd << " ]"
+	//	<< std::endl;
 	if ((ev.events & EPOLLHUP) == EPOLLHUP
 			|| (ev.events & EPOLLRDHUP) == EPOLLRDHUP)
 		this->_processEPOLLHUP(ev);
@@ -159,11 +160,11 @@ void	TcpServer::run(void)
 		evNb = 0;
 		memset((void*)evlist, 0, sizeof(evlist));
 
-		std::cout << "\033[1m@Waiting for events\033[0m" << std::endl;
+		//std::cout << "\033[1m@Waiting for events\033[0m" << std::endl;
 		evNb = epoll_wait(this->_epfd, evlist, MAXEVENT, TEVENT);
-		std::cout << "[] evNb: " << evNb << std::endl;
+		//std::cout << "[] evNb: " << evNb << std::endl;
 		if (evNb == -1)
-			throw TcpServer::InternalError();
+			throw InternalError();
 		if (!evNb)
 			continue ;
 		for (int i = 0; i < evNb; i++)
@@ -182,7 +183,7 @@ void	TcpServer::_add_client(const int &fdServer)
 	{
 		if ((errno == EAGAIN) || (errno == EWOULDBLOCK))
 			return ;
-		throw TcpServer::InternalError();
+		throw InternalError();
 	}
 
 	this->_streams[clientFd].info = info;
@@ -192,44 +193,39 @@ void	TcpServer::_add_client(const int &fdServer)
 
 	if (epoll_ctl(this->_epfd, EPOLL_CTL_ADD, client.socket,
 				&client.event) == -1)
-		throw TcpServer::InternalError();
+		throw InternalError();
 }
 
 void	TcpServer::_remove_client(Sockets &client)
 {
 	if (epoll_ctl(this->_epfd, EPOLL_CTL_DEL, client.socket,
 				&client.event) == -1)
-		throw TcpServer::InternalError();
+		throw InternalError();
 	this->_streams.erase(client.socket);
 }
 
 void	TcpServer::create(unsigned int port)
 {
+	std::cout << "@Server creation" << std::endl;
 	int	serverFd = socket(AF_INET, SOCK_STREAM, 0);
 	if (serverFd == -1)
-		throw TcpServer::InternalError();
+		throw InternalError();
 
 	this->_streams[serverFd].setup(serverFd, -1, port, true);
 
+	std::cout << "@Server binding" << std::endl;
 	Sockets &server = this->_streams[serverFd];
 	if (bind(server.socket, (struct sockaddr *)&server.info,
 				server.size) == -1)
-		throw TcpServer::InternalError();
+		throw InternalError();
 	if (listen(server.socket, MAXIREQ) == -1)
-		throw TcpServer::InternalError();
+		throw InternalError();
 
 	std::cout << "\033[44m@Server [ " << server.socket << " ] is listenning on port: "
 		<< server.port << "\033[0m" << std::endl;
 
 	if (epoll_ctl(this->_epfd, EPOLL_CTL_ADD, server.socket,
 				&(this->_streams[server.socket].event)) == -1)
-		throw TcpServer::InternalError();
+		throw InternalError();
 }
 
-const char *TcpServer::InternalError::what(void) const throw()
-{
-	std::string err = "\033[41;5m";
-	err += strerror(errno);
-	err += "\033[0m";
-	return (err.c_str());
-}

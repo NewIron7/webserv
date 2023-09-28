@@ -6,7 +6,7 @@
 #    By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/10 16:09:31 by hboissel          #+#    #+#              #
-#    Updated: 2023/09/23 12:24:15 by hboissel         ###   ########.fr        #
+#    Updated: 2023/09/28 13:28:40 by hboissel         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,7 +23,7 @@ INCS_DIR    = inc/
 DEPS_DIR	= bin/
 
 # Source files
-SRCS_FILES    = main.cpp TcpServer.cpp Sockets.cpp
+SRCS_FILES    = main.cpp TcpServer.cpp Sockets.cpp InternalError.cpp
 OBJS_FILES    = $(SRCS_FILES:.cpp=.o)
 DEPS_FILES    = $(SRCS_FILES:.cpp=.d)
 

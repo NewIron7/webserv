@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/23 12:04:20 by hboissel          #+#    #+#             */
-/*   Updated: 2023/09/27 20:22:22 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/09/28 13:17:03 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef SOCKETS_HPP
@@ -19,6 +19,8 @@
 # include <arpa/inet.h>
 # include <cerrno>
 # include <fcntl.h>
+
+# include "InternalError.hpp"
 
 class Sockets
 {
@@ -44,12 +46,6 @@ class Sockets
 		std::string			response;
 		bool				resGen;
 		bool				resSent;
-	private:
-		class InternalError: public std::exception
-		{
-			public:
-				virtual const char *what(void) const throw();
-		};
 };
 
 #endif

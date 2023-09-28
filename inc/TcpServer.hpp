@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 14:27:01 by hboissel          #+#    #+#             */
-/*   Updated: 2023/09/27 19:42:57 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/09/28 13:14:01 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef TCPSERVER_HPP
@@ -28,6 +28,7 @@
 # include <arpa/inet.h>
 # include <sys/epoll.h>
 
+# include "InternalError.hpp"
 # include "Sockets.hpp"
 
 class TcpServer
@@ -50,12 +51,6 @@ class TcpServer
 
 		int									_epfd;
 		std::map<int, Sockets>				_streams;
-
-		class InternalError: public std::exception
-		{
-			public:
-				virtual const char *what(void) const throw();
-		};
 };
 
 #endif

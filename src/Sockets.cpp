@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/23 12:19:06 by hboissel          #+#    #+#             */
-/*   Updated: 2023/09/27 20:22:43 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/09/28 13:17:45 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Sockets.hpp"
@@ -62,10 +62,10 @@ void	Sockets::setup(int sock, int sfd, int sp, bool m)
 
 	int f = fcntl(this->socket, F_GETFL, 0);
 	if (f == -1)
-		throw Sockets::InternalError();
+		throw InternalError();
 	f |= O_NONBLOCK;
 	if (fcntl(this->socket, F_SETFL, f) == -1)
-		throw Sockets::InternalError();
+		throw InternalError();
 }
 
 void	Sockets::changeEvents(uint32_t ev, int epfd)
@@ -73,13 +73,6 @@ void	Sockets::changeEvents(uint32_t ev, int epfd)
 	this->event.events = ev;
 	if (epoll_ctl(epfd, EPOLL_CTL_MOD, this->socket,
 				&this->event) == -1)
-		throw Sockets::InternalError();
+		throw InternalError();
 }
 
-const char *Sockets::InternalError::what(void) const throw()
-{
-	std::string err = "\033[31m";
-	err += strerror(errno);
-	err += "\033[0m";
-	return (err.c_str());
-}
