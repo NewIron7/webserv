@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 14:50:50 by hboissel          #+#    #+#             */
-/*   Updated: 2023/09/28 13:59:00 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/09/29 16:55:03 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "TcpServer.hpp"
@@ -37,7 +37,7 @@ void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
 	}
 	if (client.reqGot == false)
 	{
-		std::cout << "[-] No request to process" << std::endl;
+		//std::cout << "[-] No request to process" << std::endl;
 		return ;
 	}
 
@@ -206,14 +206,18 @@ void	TcpServer::_remove_client(Sockets &client)
 
 void	TcpServer::create(unsigned int port)
 {
-	std::cout << "@Server creation" << std::endl;
+	std::cout << "\033[2m@Server creation\033[0m" << std::endl;
 	int	serverFd = socket(AF_INET, SOCK_STREAM, 0);
 	if (serverFd == -1)
 		throw InternalError();
 
+	int	y = 1;
+	if (setsockopt(serverFd, SOL_SOCKET, SO_REUSEADDR, &y, sizeof(int)) == -1)
+		throw InternalError();
+
 	this->_streams[serverFd].setup(serverFd, -1, port, true);
 
-	std::cout << "@Server binding" << std::endl;
+	std::cout << "\033[2m@Server binding\033[0m" << std::endl;
 	Sockets &server = this->_streams[serverFd];
 	if (bind(server.socket, (struct sockaddr *)&server.info,
 				server.size) == -1)

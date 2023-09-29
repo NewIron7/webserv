@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/18 16:44:05 by hboissel          #+#    #+#             */
-/*   Updated: 2023/09/28 13:25:16 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/09/29 16:17:11 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "webserv.hpp"
@@ -35,7 +35,7 @@ int	main(void)
 	}
 	catch(const std::exception& e)
 	{
-		std::cerr << "\033[31m" << e.what() << "\033[0m" << std::endl;;
+		std::cerr << "\033[41m" << e.what() << "\033[0m" << std::endl;;
 	}
 	return (0);
 }
