@@ -8,6 +8,7 @@
 
 ## To do:
 
+- [ ]  Makefile (add recompiling while .hpp are changed)
 - [ ]  Parsing du fichier de config
 - [ ]  Gestion des requetes avec les sockets
 - [ ]  Parsing des requetes
@@ -43,3 +44,34 @@ Creation d’une classe tcp_server, celle-ci permet de creer un server tcp sur u
 Cette classe contiendra le fd du server tcp et les fd des differents clients.
 
 On pourra avec cela utiliser epoll pour gerer differents server en meme temps et identifier de quel server provient le fd actif.
+
+[The method to epoll’s madness](https://copyconstruct.medium.com/the-method-to-epolls-madness-d9d2d6378642)
+
+[Epoll: does it silently remove fds?](https://stackoverflow.com/questions/46987302/epoll-does-it-silently-remove-fds)
+
+[Significance of parameters in epoll_event structure (epoll)](https://stackoverflow.com/questions/24622982/significance-of-parameters-in-epoll-event-structure-epoll)
+
+We can store a pointer into epoll_event structure to help handling events.
+
+[](https://github.com/millken/c-example/blob/master/epoll-example.c)
+
+[headers/sys/epoll.h - platform/prebuilts/ndk - Git at Google](https://android.googlesource.com/platform/prebuilts/ndk/+/4448347db136fb3d172c0349c32295c6691df3be/headers/sys/epoll.h)
+
+## CGI
+
+[](https://www.rfc-editor.org/rfc/rfc3875.pdf)
+
+- [ ]  Set up all the env variable needed by cgi to works correctly based on the request
+- [ ]  Prepare pipes to give to cgi the requests body and to get the cgi output
+- [ ]  fork and execve cgi
+- [ ]  send request body throught the right pipe
+- [ ]  read response from out pipe
+- [ ]  send it to client ( adding status code 200 if its not in the cgi output)
+
+## Deal with file upload
+
+[RFC 7578: Returning Values from Forms: multipart/form-data](https://www.rfc-editor.org/rfc/rfc7578)
+
+- [ ]  check content-type (multipart/form-data)
+- [ ]  parse the body with the boundaries
+- [ ]  create and fill files to put content into it
