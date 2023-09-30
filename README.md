@@ -59,7 +59,7 @@ We can store a pointer into epoll_event structure to help handling events.
 
 ## CGI
 
-[](https://www.rfc-editor.org/rfc/rfc3875.pdf)
+[The Common Gateway Interface (CGI) Version 1.1](https://www.rfc-editor.org/rfc/rfc3875.pdf)
 
 - [ ]  Set up all the env variable needed by cgi to works correctly based on the request
 - [ ]  Prepare pipes to give to cgi the requests body and to get the cgi output
