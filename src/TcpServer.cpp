@@ -6,14 +6,14 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 14:50:50 by hboissel          #+#    #+#             */
-/*   Updated: 2023/09/29 16:55:03 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/09/30 09:51:04 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "TcpServer.hpp"
 
 TcpServer::TcpServer(void)
 {
-	this->_epfd = epoll_create1(0);
+	this->_epfd = epoll_create1(EPOLL_CLOEXEC);
 	if (this->_epfd == -1)
 		throw InternalError();
 }
@@ -50,7 +50,7 @@ void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
 
 
 		response = "HTTP/1.1 200 OK\nContent-Type: text/plain\n";
-		response += "Content-Length: 12\n\nHello world!";
+		response += "Content-Length: 12\n\nHello World!";
 		
 		client.response = response;
 		client.resGen = true;
