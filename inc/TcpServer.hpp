@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 14:27:01 by hboissel          #+#    #+#             */
-/*   Updated: 2023/09/28 13:14:01 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/01 18:59:18 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef TCPSERVER_HPP
@@ -30,6 +30,12 @@
 
 # include "InternalError.hpp"
 # include "Sockets.hpp"
+# include "DefaultErrorPages.hpp"
+
+#include <sstream>
+
+#define SSTR( x ) static_cast< std::ostringstream & >( \
+		        ( std::ostringstream() << std::dec << x ) ).str()
 
 class TcpServer
 {
