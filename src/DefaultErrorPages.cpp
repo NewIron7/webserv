@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/01 15:09:16 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/01 19:01:32 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/01 19:43:42 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "DefaultErrorPages.hpp"
@@ -39,6 +39,15 @@ const std::string	DefaultErrorPages::generate(unsigned int code, std::string det
 			break ;
 		case 404:
 			page = genByCode("404 - Not Found", details);
+			break ;
+		case 405:
+			page = genByCode("405 - Method Not Allowed", details);
+			break ;
+		case 411:
+			page = genByCode("411 - Length Required", details);
+			break ;
+		case 413:
+			page = genByCode("413 - Payload Too Large", details);
 			break ;
 	}
 	return (page);
