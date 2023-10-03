@@ -5,12 +5,12 @@ class	Server
 {
 	private:
 		int				_port;
-		int				_host;
-		std::string*	_servers_names;
+		std::string		_host;
+		std::vector<std::string> _servers_names;
 		bool			_default;
-		std::map<int, std::string>*	_err_codes;
+		std::map<int, std::string>	_err_codes;
 		int				_body_size;
-		ServerLocation*	_locations;
+		std::vector<ServerLocation>	_locations;
 
 	public:
 		Server();
@@ -19,7 +19,7 @@ class	Server
 		Server&	operator=(const Server& old);
 
 		int				getPort();
-		int				getHost();
+		std::string		getHost();
 		std::string*	getServers_names();
 		bool			getDefault();
 		std::map<int, std::string>*	getErr_codes();
@@ -27,7 +27,7 @@ class	Server
 		ServerLocation*	getLocations();
 
 		void	setPort(int port);
-		void	setHost(int host);
+		void	setHost(std::string host);
 		void	setServers_names(std::string* servers_names);
 		void	setDefault(bool dfl);
 		void	setErr_codes(std::map<int, std::string>* err_codes);
