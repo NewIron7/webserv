@@ -1,10 +1,8 @@
 <div align="center">
   <h1 style="font-size: 36px; color: #333;">Webserv</h1>
-  <p style="font-size: 18px; color: #666;">A High-Performance HTTP Server for Your Web Projects</p>
+  <p style="font-size: 18px; color: #666;">A HTTP Server written in C++ from scratch</p>
   <hr style="border: 1px solid #ddd; width: 50%;">
 </div>
-
-# webserv
 
 [HTTP Server: Everything you need to know to Build a simple HTTP server from scratch](https://medium.com/from-the-scratch/http-server-what-do-you-need-to-know-to-build-a-simple-http-server-from-scratch-d1ef8945e4fa)
 
