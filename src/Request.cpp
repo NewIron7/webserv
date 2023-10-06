@@ -6,10 +6,30 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 16:13:32 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/06 05:39:54 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/06 19:10:15 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Request.hpp"
+
+void Request::printAttributes(void) const
+{
+	std::cout << "Method: " << _method << std::endl;
+	std::cout << "Target: " << _target << std::endl;
+	std::cout << "HTTP Version: " << _pVersion << std::endl;
+	std::cout << "Host: " << _host << std::endl;
+	std::cout << "Port: " << _port << std::endl;
+
+	std::cout << "Headers:" << std::endl;
+	for (std::map<std::string,
+			std::string>::const_iterator it = _headers.begin();
+			it != _headers.end(); ++it)
+	{
+		std::cout << "	" << it->first << ": " << it->second << std::endl;
+	}
+
+	std::cout << "Body: " << _body << std::endl;
+	std::cout << "Error Code: " << _errorCode << std::endl;
+}
 
 void	Request::_getElemRequestLine(std::string requestLine)
 {
@@ -46,7 +66,6 @@ void	Request::_checkWhitespaceElemRequestLine(void)
 void	Request::_getRequestLine(std::string &r)
 {
 	std::string	requestLine = r.substr(0, r.find("\r\n"));
-	//std::cout << requestLine << std::endl;
 	if (requestLine.empty() || requestLine.compare(r) == 0)
 	{
 		this->_errorCode = 400;
@@ -97,22 +116,27 @@ static void	toUpperString(std::string &str)
 		*it = std::toupper(*it);
 }
 
-void	Request::_checkContentLength(void)
+void	Request::_checkContentLength(const std::string &r)
 {
 	std::string cl = "CONTENT-LENGTH";
 	std::string te = "TRANSFER-ENCODING";
 	if (this->_headers.find(cl) != this->_headers.end())
 	{
-		if (isStringOnlyDigits(this->_headers[cl]) == False)
+		if (isStringOnlyDigits(this->_headers[cl]) == false || r.empty())
 			this->_errorCode = 400;
 	}
 	else if (this->_headers.find(te) != this->_headers.end())
 	{
-		toUpperString(this->_headers[te]);
-		if (this->_headers[te].compare("CHUNKED"))
-			this->_errorCode = 411;
+		if (r.empty())
+			this->_errorCode = 400;
+		else
+		{
+			toUpperString(this->_headers[te]);
+			if (this->_headers[te].compare("CHUNKED"))
+				this->_errorCode = 411;
+		}
 	}
-	else
+	else if (r.empty() == false)
 		this->_errorCode = 411;
 }
 
@@ -121,22 +145,48 @@ void	Request::_checkHost(void)
 	std::string	host = "HOST";
 	if (this->_headers.find(host) == this->_headers.end())
 	{
-		if (this->_pVersion.compare("HTTP/1.1"))
+		if (this->_pVersion.compare("HTTP/1.1") == 0)
 			this->_errorCode = 400;
 	}
 	else
 	{
-		//check host value. See notion for ressource
+		std::size_t	found = this->_headers[host].find_last_of(":");
+		if (found != std::string::npos)
+		{
+			this->_host = this->_headers[host].substr(0, found);
+			if (isStringOnlyDigits(this->_headers[host].substr(found + 1)) == false)
+				this->_errorCode = 400;
+			else
+			{
+				std::stringstream tmp;
+				tmp << this->_headers[host].substr(found + 1);
+				tmp >> this->_port;
+			}
+		}
+		else
+			this->_host = this->_headers[host];
 	}
+}
+
+void	Request::_checkBodyLength(void)
+{
+	std::stringstream tmp;
+
+	tmp << this->_headers["CONTENT-LENGTH"];
+	unsigned long length;
+	tmp >> length;
+	if (length != this->_body.length())
+		this->_errorCode = 400;
 }
 
 void	Request::_getHeaders(std::string &r)
 {
+	std::string line;
 	while (r.empty() == 0)
 	{
-		std::string	line = r.substr(0, r.find("\r\n"));
+		line = r.substr(0, r.find("\r\n"));
 		if (line.empty())
-			return ;
+			break ;
 		if (line.compare(r) == 0)
 		{
 			this->_errorCode = 400;
@@ -170,28 +220,27 @@ void	Request::_getHeaders(std::string &r)
 		}
 		this->_headers[key] = value;
 	}
-	this->_checkContentLength();
+	if (r.empty())
+	{
+		this->_errorCode = 400;
+		return ;
+	}
+	else if (line.empty())
+		r.erase(0, 2);
+	std::cout << "length r: " << r.length() << std::endl;
+	this->_checkContentLength(r);
 	if (this->_errorCode)
 		return ;
 	this->_checkHost();
+	this->_body = r;
 }
 
-Request::Request(std::string r): _errorCode(0)
+Request::Request(std::string r): _port(80), _errorCode(0)
 {
 	this->_getRequestLine(r);
 	if (this->_errorCode)
-	{
-		//std::cout << "error: " << this->_errorCode << std::endl;
 		return ;
-	}
 	this->_getHeaders(r);
-
-	std::cout << "Contents of the headers:" << std::endl;
-	for (std::map<std::string, std::string>::const_iterator it = this->_headers.begin();
-			it != this->_headers.end(); ++it)
-	{
-		std::cout << it->first << "=" << it->second << "$" << std::endl;
-	}
 }
 
 Request::~Request(void) {}
