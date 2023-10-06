@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 16:13:32 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/05 19:56:09 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/06 05:39:54 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Request.hpp"
@@ -80,11 +80,54 @@ static inline std::string& trim(std::string& s, const char* t)
 	return ltrim(rtrim(s, t), t);
 }
 
+static bool isStringOnlyDigits(const std::string& str)
+{
+	for (size_t i = 0; i < str.length(); ++i)
+	{
+		if (!std::isdigit(str[i])) {
+			return false;
+		}
+	}
+	return true;
+}
+
+static void	toUpperString(std::string &str)
+{
+	for (std::string::iterator it = str.begin(); it != str.end(); ++it)
+		*it = std::toupper(*it);
+}
+
 void	Request::_checkContentLength(void)
 {
 	std::string cl = "CONTENT-LENGTH";
 	std::string te = "TRANSFER-ENCODING";
-	if (this->_headers.find(cl) !=
+	if (this->_headers.find(cl) != this->_headers.end())
+	{
+		if (isStringOnlyDigits(this->_headers[cl]) == False)
+			this->_errorCode = 400;
+	}
+	else if (this->_headers.find(te) != this->_headers.end())
+	{
+		toUpperString(this->_headers[te]);
+		if (this->_headers[te].compare("CHUNKED"))
+			this->_errorCode = 411;
+	}
+	else
+		this->_errorCode = 411;
+}
+
+void	Request::_checkHost(void)
+{
+	std::string	host = "HOST";
+	if (this->_headers.find(host) == this->_headers.end())
+	{
+		if (this->_pVersion.compare("HTTP/1.1"))
+			this->_errorCode = 400;
+	}
+	else
+	{
+		//check host value. See notion for ressource
+	}
 }
 
 void	Request::_getHeaders(std::string &r)
@@ -101,8 +144,7 @@ void	Request::_getHeaders(std::string &r)
 		}
 		r.erase(0, line.length() + 2);
 		std::string key = line.substr(0, line.find(":"));
-		for (std::string::iterator it = key.begin(); it != key.end(); ++it)
-			*it = std::toupper(*it);
+		toUpperString(key);
 		if (key.empty() || key.compare(r) == 0
 				|| this->_headers.find(key) != this->_headers.end())
 		{
@@ -121,8 +163,17 @@ void	Request::_getHeaders(std::string &r)
 			this->_errorCode = 400;
 			return ;
 		}
+		if (this->_headers.find(key) != this->_headers.end())
+		{
+			this->_errorCode = 400;
+			return ;
+		}
 		this->_headers[key] = value;
 	}
+	this->_checkContentLength();
+	if (this->_errorCode)
+		return ;
+	this->_checkHost();
 }
 
 Request::Request(std::string r): _errorCode(0)

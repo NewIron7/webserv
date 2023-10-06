@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 15:54:23 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/05 19:49:40 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/06 05:28:02 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef REQUEST_HPP
@@ -34,7 +34,8 @@ class Request
 		void	_getElemRequestLine(std::string requestLine);
 		void    _checkWhitespaceElemRequestLine(void);
 		void	_getHeaders(std::string &r);
-		void    Request::_checkContentLength(void);
+		void    _checkContentLength(void);
+		void	_checkHost(void);
 };
 
 #endif
