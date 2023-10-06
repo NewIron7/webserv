@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 14:50:50 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/06 17:42:28 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/06 19:33:11 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "TcpServer.hpp"
@@ -48,8 +48,8 @@ void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
 		std::cout << "\033[35m[] Request ->\033[0m" << std::endl;
 		std::cout << "\033[2m" << client.request << "\033[0m" << std::endl;
 
-		Request test(client.request);
-		test.printAttributes();
+		client.oRequest = Request(client.request);
+		client.oRequest.printAttributes();
 
 		std::string body  = DefaultErrorPages::generate(404, "Hello World!");
 		response = "HTTP/1.1 404 Not Found\nContent-Type: text/html\n";

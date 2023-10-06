@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 15:54:23 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/06 18:57:57 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/06 19:31:34 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef REQUEST_HPP
@@ -20,8 +20,11 @@
 class Request
 {
 	public:
+		Request(void);
 		Request(std::string r);
 		~Request(void);
+
+		Request &operator=(const Request &rhs);
 
 		void	printAttributes(void) const;
 	private:

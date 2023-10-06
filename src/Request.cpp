@@ -6,11 +6,29 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 16:13:32 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/06 19:10:15 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/06 19:33:58 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Request.hpp"
 
+Request::Request(void) {}
+
+Request	&Request::operator=(const Request& rhs)
+{
+	if (this == &rhs)
+		return *this;
+
+	this->_method = rhs._method;
+	this->_target = rhs._target;
+	this->_pVersion = rhs._pVersion;
+	this->_host = rhs._host;
+	this->_port = rhs._port;
+	this->_headers = rhs._headers;
+	this->_body = rhs._body;
+	this->_errorCode = rhs._errorCode;
+
+	return (*this);
+}
 void Request::printAttributes(void) const
 {
 	std::cout << "Method: " << _method << std::endl;
@@ -227,7 +245,6 @@ void	Request::_getHeaders(std::string &r)
 	}
 	else if (line.empty())
 		r.erase(0, 2);
-	std::cout << "length r: " << r.length() << std::endl;
 	this->_checkContentLength(r);
 	if (this->_errorCode)
 		return ;
