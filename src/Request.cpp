@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 16:13:32 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/07 17:27:18 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/07 18:42:34 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Request.hpp"
@@ -98,6 +98,7 @@ void	Request::_getRequestLine(std::string &r)
 	bool found = (std::find(method, method + 3, this->_method) != method + 3);
 	if (found == false)
 		this->_errorCode = 501;
+	//check target: format and get query
 }
 
 static inline std::string& rtrim(std::string& s, const char* t)

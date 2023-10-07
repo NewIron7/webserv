@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 15:54:23 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/07 17:38:15 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/07 18:42:47 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef REQUEST_HPP
@@ -36,6 +36,7 @@ class Request
 	private:
 		std::string	_method;
 		std::string _target;
+		std::string _query;
 		std::string	_pVersion;
 		std::string _host;
 		unsigned int	_port;

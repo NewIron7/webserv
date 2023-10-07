@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/01 15:09:16 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/07 17:57:37 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/07 18:07:22 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "DefaultErrorPages.hpp"
@@ -27,7 +27,7 @@ std::string	DefaultErrorPages::genByCode(std::string code, std::string name, std
 	gen += code + " - " + name;
 	gen += "</h1><p>" + details + "</p></div></body></html>";
 	
-	std::string headers = "HTTP/1.1 " + code + name + "\r\n";
+	std::string headers = "HTTP/1.1 " + code + " " + name + "\r\n";
 	headers += "Content-Type: text/html\r\nContent-Length: "
 		+ SSTR(gen.length()) + "\r\n\r\n";
 	return (headers + gen);
