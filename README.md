@@ -79,3 +79,26 @@ We can store a pointer into epoll_event structure to help handling events.
 - [ ]  check content-type (multipart/form-data)
 - [ ]  parse the body with the boundaries
 - [ ]  create and fill files to put content into it
+
+## Parsing request
+
+[Hypertext Transfer Protocol (HTTP) Field Name Registry](https://www.iana.org/assignments/http-fields/http-fields.xhtml)
+
+1. request line: ************************method token + “ “ + request-target + “ “ + protocol version + “\r\n” →************************ error = 400 bad request or method not implemented = 501
+2. header fields: case-insensitive; ********************************************field name + “:” + optional leading whitespaces + field value + optional trailing whitespaces********************************************; ignore unrecognized herder fields; several field value can be send under the same field name and are separated by comma; no whitespace between field name and colon otherwise 400 error is throwed.
+3. Content-Length must be 0 or greater, if multiple content-length field, reject request by 400 error; no content-length and transfer-encoding is not chunked = 411 error
+4. Incomplete request = throw error ( 400 probably ) and close connection
+5. Host field: error if multiple host or no host for HTTP/1.1; need to verify host value to know if 400 error have to be sent
+
+[RFC 3986: Uniform Resource Identifier (URI): Generic Syntax](https://datatracker.ietf.org/doc/html/rfc3986#section-3.2.2)
+
+## Request execution
+
+1. body into GET or DELETE request = 400 error
+2. DELETE →delete the ressource
+3. POST → create ressource with body or append data in existing file
+4. create map to determine Content-Type
+
+## Build a header
+
+1.
