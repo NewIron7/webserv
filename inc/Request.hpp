@@ -6,16 +6,21 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 15:54:23 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/06 19:31:34 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/07 17:38:15 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef REQUEST_HPP
 # define REQUEST_HPP
 
+#define SSTR( x ) static_cast< std::ostringstream & >( \
+		( std::ostringstream() << std::dec << x ) ).str()
+
 # include <map>
 # include <iostream>
 # include <algorithm>
 # include <sstream>
+
+# include "DefaultErrorPages.hpp"
 
 class Request
 {
@@ -26,7 +31,8 @@ class Request
 
 		Request &operator=(const Request &rhs);
 
-		void	printAttributes(void) const;
+		void		printAttributes(void) const;
+		std::string	process(void);
 	private:
 		std::string	_method;
 		std::string _target;

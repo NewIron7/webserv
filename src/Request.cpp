@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 16:13:32 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/06 19:33:58 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/07 17:27:18 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Request.hpp"
@@ -195,6 +195,7 @@ void	Request::_checkBodyLength(void)
 	tmp >> length;
 	if (length != this->_body.length())
 		this->_errorCode = 400;
+	//check body length compared to what has been written in conf file
 }
 
 void	Request::_getHeaders(std::string &r)
