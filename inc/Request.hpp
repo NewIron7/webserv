@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 15:54:23 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/07 18:42:47 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/08 14:35:07 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef REQUEST_HPP
@@ -20,8 +20,6 @@
 # include <algorithm>
 # include <sstream>
 
-# include "DefaultErrorPages.hpp"
-
 class Request
 {
 	public:
@@ -32,7 +30,19 @@ class Request
 		Request &operator=(const Request &rhs);
 
 		void		printAttributes(void) const;
-		std::string	process(void);
+
+		const std::string& getMethod() const;
+		const std::string& getTarget() const;
+		const std::string& getQuery() const;
+		const std::string& getVersion() const;
+		const std::string& getHost() const;
+		unsigned int getPort() const;
+		const std::map<std::string, std::string>& getHeaders() const;
+		const std::string& getBody() const;
+		unsigned int getErrorCode() const;
+
+		void	setErrorCode(const unsigned int err);
+	
 	private:
 		std::string	_method;
 		std::string _target;

@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 16:13:32 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/07 18:42:34 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/08 14:36:03 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Request.hpp"
@@ -263,3 +263,45 @@ Request::Request(std::string r): _port(80), _errorCode(0)
 }
 
 Request::~Request(void) {}
+
+const std::string& Request::getMethod() const {
+    return this->_method;
+}
+
+const std::string& Request::getTarget() const {
+    return this->_target;
+}
+
+const std::string& Request::getQuery() const {
+    return this->_query;
+}
+
+const std::string& Request::getVersion() const {
+    return this->_pVersion;
+}
+
+const std::string& Request::getHost() const {
+    return this->_host;
+}
+
+unsigned int Request::getPort() const {
+    return this->_port;
+}
+
+const std::map<std::string, std::string>& Request::getHeaders() const {
+    return this->_headers;
+}
+
+const std::string& Request::getBody() const {
+    return this->_body;
+}
+
+unsigned int Request::getErrorCode() const {
+    return this->_errorCode;
+}
+
+void	Request::setErrorCode(const unsigned int err)
+{
+	this->_errorCode = err;
+}
+

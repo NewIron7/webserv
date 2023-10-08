@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/23 12:04:20 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/06 19:31:20 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/08 14:15:17 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef SOCKETS_HPP
@@ -22,6 +22,7 @@
 
 # include "Request.hpp"
 # include "InternalError.hpp"
+# include "DefaultErrorPages.hpp"
 
 class Sockets
 {
@@ -34,6 +35,8 @@ class Sockets
 
 		void	setup(int sock, int sfd, int sp, bool m = false);
 		void	changeEvents(uint32_t ev, int epfd);
+
+		void				process(void);
 
 		bool				main;
 		int					server;
@@ -48,6 +51,19 @@ class Sockets
 		std::string			response;
 		bool				resGen;
 		bool				resSent;
+
+	private:
+		void	_processMethod(void);
+		void	_processGET(void);
+		void	_processPOST(void);
+		void	_processDELETE(void);
+		void	_checkBodyEmpty(void);
+
+		class Error : public std::exception
+		{
+			public:
+				virtual const char* what() const throw();
+		};
 };
 
 #endif

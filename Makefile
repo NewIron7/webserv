@@ -6,7 +6,7 @@
 #    By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/10 16:09:31 by hboissel          #+#    #+#              #
-#    Updated: 2023/10/07 17:28:39 by hboissel         ###   ########.fr        #
+#    Updated: 2023/10/08 12:58:56 by hboissel         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -19,16 +19,20 @@ CXXFLAGS        = -g3 -Wall -Wextra -Werror -std=c++98 -pedantic-errors
 # Directories
 SRCS_DIR    = src/
 OBJS_DIR    = bin/
+DEPS_DIR    = bin/
 INCS_DIR    = inc/
 
 # Source files
 SRCS_FILES    = main.cpp TcpServer.cpp Sockets.cpp InternalError.cpp DefaultErrorPages.cpp\
-				Request.cpp Request_process.cpp
+				Request.cpp Sockets_process.cpp
 OBJS_FILES    = $(SRCS_FILES:.cpp=.o)
+DEPS_FILES    = $(SRCS_FILES:.cpp=.d)
 
 # Paths
 SRCS        = $(addprefix $(SRCS_DIR), $(SRCS_FILES))
 OBJS        = $(addprefix $(OBJS_DIR), $(OBJS_FILES))
+DEPS        = $(addprefix $(DEPS_DIR), $(DEPS_FILES))
+
 
 # Colors / Actions
 RESET        = \033[0m
@@ -52,10 +56,12 @@ $(NAME):    $(OBJS)
 $(OBJS_DIR)%.o: $(SRCS_DIR)%.cpp
 	@mkdir -p $(OBJS_DIR)
 	@echo "$(YELLOW)Compiling [$@]...$(RESET)"
-	$(CXX) $(CXXFLAGS) -I $(INCS_DIR) -o $@ -c $<
+	$(CXX) $(CXXFLAGS) -MMD -I $(INCS_DIR) -o $@ -c $<
 	@printf "$(UP)$(CUT)"
 	@echo "$(GREEN)Finished compiling [$@]$(RESET)"
 	@printf "$(UP)$(CUT)"
+
+-include $(DEPS)
 
 # Other rules
 clean:

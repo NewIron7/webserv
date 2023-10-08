@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 14:50:50 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/07 17:37:46 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/08 14:53:14 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "TcpServer.hpp"
@@ -49,9 +49,9 @@ void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
 		std::cout << "\033[2m" << client.request << "\033[0m" << std::endl;
 
 		client.oRequest = Request(client.request);
-		client.oRequest.printAttributes();
-		client.response = client.oRequest.process();
+		client.process();
 
+		client.oRequest.printAttributes();
 		client.resGen = true;
 		client.request.clear();
 		

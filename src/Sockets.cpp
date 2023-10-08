@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/23 12:19:06 by hboissel          #+#    #+#             */
-/*   Updated: 2023/09/28 13:17:45 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/08 12:43:50 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Sockets.hpp"
@@ -20,6 +20,8 @@ Sockets::Sockets(void):
 	this->event.events = EPOLLIN | EPOLLOUT;
 	this->event.events |= EPOLLRDHUP;
 	this->event.events |= EPOLLPRI;
+
+	this->response = DefaultErrorPages::generate(418, "Hello World!");
 }
 
 Sockets::~Sockets(void)
@@ -41,6 +43,12 @@ Sockets	&Sockets::operator=(Sockets const &rhs)
 	this->size = rhs.size;
 	this->port = rhs.port;
 	this->event = rhs.event;
+	this->request = rhs.request;
+	this->oRequest = rhs.oRequest;
+	this->reqGot = rhs.reqGot;
+	this->response = rhs.response;
+	this->resGen = rhs.resGen;
+	this->resSent = rhs.resSent;
 
 	return (*this);
 }
