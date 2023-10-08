@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/23 12:04:20 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/08 14:15:17 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/08 15:16:36 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef SOCKETS_HPP
@@ -58,6 +58,9 @@ class Sockets
 		void	_processPOST(void);
 		void	_processDELETE(void);
 		void	_checkBodyEmpty(void);
+
+		bool	_isCGI(void);
+		void	_processCGI(void);
 
 		class Error : public std::exception
 		{

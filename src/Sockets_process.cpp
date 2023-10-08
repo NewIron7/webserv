@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/08 12:39:57 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/08 14:52:43 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/08 15:17:47 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Sockets.hpp"
@@ -54,6 +54,16 @@ void	Sockets::_processMethod(void)
 		this->_processDELETE();
 }
 
+bool	Sockets::_isCGI(void)
+{
+	return (false);
+}
+
+void	Sockets::_processCGI(void)
+{
+	//execute CGI
+}
+
 void	Sockets::process(void)
 {
 	if (this->oRequest.getErrorCode())
@@ -62,7 +72,11 @@ void	Sockets::process(void)
 	//process the request and return std::string with the server response
 	try
 	{
-		this->_processMethod();
+		//before check if its a CGI call
+		if (this->_isCGI())
+			this->_processCGI();
+		else
+			this->_processMethod();
 	}
 	catch(const std::exception& e)
 	{
