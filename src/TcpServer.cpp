@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 14:50:50 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/08 14:53:14 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/12 09:04:51 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "TcpServer.hpp"
@@ -48,7 +48,6 @@ void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
 		std::cout << "\033[35m[] Request ->\033[0m" << std::endl;
 		std::cout << "\033[2m" << client.request << "\033[0m" << std::endl;
 
-		client.oRequest = Request(client.request);
 		client.process();
 
 		client.oRequest.printAttributes();
@@ -193,6 +192,17 @@ void	TcpServer::_add_client(const int &fdServer)
 	if (epoll_ctl(this->_epfd, EPOLL_CTL_ADD, client.socket,
 				&client.event) == -1)
 		throw InternalError();
+}
+
+void	TcpServer::_add_cgi(Sockets &client)
+{
+	CGIprocess	&cgi = client.cgi;
+
+	cgi.size = sizeof(cgi.info);
+	memset((void*)&cgi.info, 0, size);
+
+	//replace that by a map of pointers to socket
+	this->_CGIstreams[cgi.fds[cgi.step]] = cgi;
 }
 
 void	TcpServer::_remove_client(Sockets &client)

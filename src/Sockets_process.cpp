@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/08 12:39:57 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/08 15:17:47 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/12 08:11:10 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Sockets.hpp"
@@ -66,6 +66,7 @@ void	Sockets::_processCGI(void)
 
 void	Sockets::process(void)
 {
+	this->oRequest = Request(this->request);
 	if (this->oRequest.getErrorCode())
 		this->response = DefaultErrorPages::generate(
 			this->oRequest.getErrorCode(), "Error while parsing the request");

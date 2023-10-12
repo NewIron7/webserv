@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 17:44:50 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/10 15:49:47 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/12 09:04:54 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef CGIPROCESS_HPP
@@ -26,11 +26,13 @@ class CGIprocess
 		CGIprocess(const Request &req);
 		~CGIprocess(void);
 
-		int					inFd;
-		int					outFd;
+		unsigned int		step;
+		int					fds[2];
 		struct sockaddr_in	info;
 		socklen_t			size;
 		struct epoll_event	event;
+		
+		int					clientFd;
 	private:
 		std::map<std::string, std::string>	_env;
 		char								**_envExec;

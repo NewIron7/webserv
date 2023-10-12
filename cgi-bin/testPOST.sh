@@ -1,5 +1,6 @@
 #!/bin/bash
 
+export REDIRECT_STATUS="200"
 export REQUEST_METHOD="POST"
 export CONTENT_TYPE="application/x-www-form-urlencoded"
 export CONTENT_LENGTH="22"
@@ -14,8 +15,9 @@ export REMOTE_ADDR="192.168.1.1"
 export REMOTE_PORT="12345"
 export SERVER_PROTOCOL="HTTP/1.1"
 export SCRIPT_NAME="/testPOST.php"
-export SCRIPT_FILENAME="/home/hboissel/webserv/cgi-bin/testPOST.php"
+export SCRIPT_FILENAME="/home/$USER/webserv/cgi-bin/testPOST.php"
 export DOCUMENT_ROOT="/var/www/html"
 export GATEWAY_INTERFACE="CGI/1.1"
 
-echo "name=Aurelien&age=17" | ./php-cgi
+#echo -n "name=Aurelien&age=17" | ./php-cgi
+./php-cgi
