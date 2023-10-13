@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/23 12:04:20 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/08 15:16:36 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/13 07:37:08 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef SOCKETS_HPP
@@ -23,6 +23,7 @@
 # include "Request.hpp"
 # include "InternalError.hpp"
 # include "DefaultErrorPages.hpp"
+# include "CGIprocess.hpp"
 
 class Sockets
 {
@@ -52,6 +53,8 @@ class Sockets
 		bool				resGen;
 		bool				resSent;
 
+		bool				CGIrun;
+		CGIprocess			cgi;
 	private:
 		void	_processMethod(void);
 		void	_processGET(void);

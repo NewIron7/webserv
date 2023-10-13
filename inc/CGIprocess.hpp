@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 17:44:50 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/12 09:04:54 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/13 06:53:35 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef CGIPROCESS_HPP
@@ -23,7 +23,7 @@
 class CGIprocess
 {
 	public:
-		CGIprocess(const Request &req);
+		CGIprocess(void);
 		~CGIprocess(void);
 
 		unsigned int		step;
@@ -33,6 +33,12 @@ class CGIprocess
 		struct epoll_event	event;
 		
 		int					clientFd;
+
+		std::string			response;
+		
+		void	runCGI(const Request &req);
+
+		void	endCGI(bool err);
 	private:
 		std::map<std::string, std::string>	_env;
 		char								**_envExec;
@@ -48,7 +54,6 @@ class CGIprocess
 		pid_t								_pid;
 		int									_exitStatus;
 
-		void	_runCGI(void);
 		void	_setupEnv(const Request &req);
 		void	_getEnvExec(void);
 		void	_createArgs(void);

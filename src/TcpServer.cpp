@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 14:50:50 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/12 09:04:51 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/13 07:56:42 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "TcpServer.hpp"
@@ -25,8 +25,21 @@ TcpServer::~TcpServer(void)
 }
 
 void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
-{
-	Sockets	&client = this->_streams[ev.data.fd];
+
+	if (this->_streams.find(ev.data.fd) != this->_streams.end())
+		Sockets	&client = this->_streams[ev.data.fd];
+	else
+	{
+		Sockets *client = this->_CGIstreams[ev.data.fd];
+		CGIprocess &cgi = client->cgi;
+	
+		cgi.sendBody();
+		
+		if (cgi.step == 1)
+		{
+
+		}
+	}
 
 	//std::cout << "[] EPOLLOUT event" << std::endl;
 	
@@ -49,6 +62,8 @@ void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
 		std::cout << "\033[2m" << client.request << "\033[0m" << std::endl;
 
 		client.process();
+		if (client.CGIrun)
+			this->_add_cgi(client);
 
 		client.oRequest.printAttributes();
 		client.resGen = true;
@@ -87,6 +102,13 @@ void	TcpServer::_processEPOLLIN(struct epoll_event &ev)
 			<< " on server [ " << server.socket << " ]\033[0m" << std::endl;
 		this->_add_client(server.socket);
 	}
+	else if (this->_CGIstreams.find(ev.data.fd) != this->_streams.end())
+	{
+		Socket	*client = this->_CGIstreams[ev.data.fd];
+		CGIprocess	&cgi = client->cgi;
+	
+		cgi.readResponse();
+	}
 	else
 	{
 		Sockets	&client = this->_streams[ev.data.fd];
@@ -115,16 +137,38 @@ void	TcpServer::_processEPOLLIN(struct epoll_event &ev)
 void	TcpServer::_processEPOLLERR(struct epoll_event &ev)
 {
 	std::cout << "[] EPOLLERR event" << std::endl;
-	Sockets &client = this->_streams[ev.data.fd];
-	this->_remove_client(client);
+	if (this->_CGIstreams.find(ev.data.fd) != this->_streams.end())
+	{
+		Sockets &client = this->_streams[ev.data.fd];
+		this->_remove_client(client);
+	}
+	else
+	{
+		Sockets *client = this->_streams[ev.data.fd];
+		CGIprocess &cgi = client->cgi;
+	
+		cgi.endCGI(true);
+		this->_remove_cgi(*client);
+	}
 }
 
 void	TcpServer::_processEPOLLHUP(struct epoll_event &ev)
 {
 	std::cout << "[] EPOLLHUP event" << std::endl;
-	Sockets &client = this->_streams[ev.data.fd];
-	std::cout << "\033[31m[-] [ " << client.socket << " ] disconnected\033[0m" << std::endl;
-	this->_remove_client(client);
+	if (this->_CGIstreams.find(ev.data.fd) != this->_streams.end())
+	{
+		Sockets &client = this->_streams[ev.data.fd];
+		std::cout << "\033[31m[-] [ " << client.socket << " ] disconnected\033[0m" << std::endl;
+		this->_remove_client(client);
+	}
+	else
+	{
+		Sockets *client = this->_streams[ev.data.fd];
+		CGIprocess &cgi = client->cgi;
+	
+		cgi.endCGI(false);
+		this->_remove_cgi(*client);
+	}
 }
 
 void	TcpServer::_processEvent(struct epoll_event &ev)
@@ -202,7 +246,30 @@ void	TcpServer::_add_cgi(Sockets &client)
 	memset((void*)&cgi.info, 0, size);
 
 	//replace that by a map of pointers to socket
-	this->_CGIstreams[cgi.fds[cgi.step]] = cgi;
+	this->_CGIstreams[cgi.fds[cgi.step]] = &client;
+	cgi.clientFd = client.socket;
+
+	if (cgi.fds[cgi.step] == 0)
+		cgi.event.events = EPOLLOUT;
+	else
+		cgi.event.events = EPOLLIN;
+	cgi.event.events |= EPOLLRDHUP;
+	cgi.event.events |= EPOLLPRI;
+
+
+	if (epoll_ctl(this->_epfd, EPLL_CTL_ADD, cgi.fds[cgi.step],
+				&cgi.event) == -1)
+		throw InternalError();
+}
+
+void	TcpServer::_remove_cgi(Sockets &client)
+{
+	CGIprocess	&cgi = client.cgi;
+
+	if (epoll_ctl(this->_epfd, EPOLL_CTL_DEL, cgi.fds[!cgi.step],
+				&cgi.event) == -1)
+		throw InternalError();
+	this->_CGIstreams.erase(cgi.fds[!cgi.step]);
 }
 
 void	TcpServer::_remove_client(Sockets &client)

@@ -6,14 +6,14 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/23 12:19:06 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/08 12:43:50 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/13 07:37:28 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Sockets.hpp"
 
 Sockets::Sockets(void):
 	main(false), server(-1), socket(-1), port(-1), reqGot(false), resGen(false)
-	,resSent(false)
+	,resSent(false), CGIrun(false)
 {
 	this->size = sizeof(this->info);
 	memset((void*)&this->info, 0, this->size);

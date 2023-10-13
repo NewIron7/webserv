@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 14:27:01 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/12 08:23:53 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/13 05:39:23 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef TCPSERVER_HPP
@@ -59,7 +59,7 @@ class TcpServer
 
 		int									_epfd;
 		std::map<int, Sockets>				_streams;
-		std::map<int, CGIprocess>			_CGIstreams;
+		std::map<int, *Sockets>				_CGIstreams;
 };
 
 #endif

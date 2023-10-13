@@ -6,14 +6,14 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 18:01:04 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/09 20:23:14 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/13 07:57:27 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "CGIprocess.hpp"
 
-CGIprocess::CGIprocess(const Request &req): _envExec(NULL), _exitStatus(0)
+CGIprocess::CGIprocess(void): _envExec(NULL), _exitStatus(0)
 {
-	this->_setupEnv(req);
+
 }
 
 CGIprocess::~CGIprocess(void)
@@ -119,8 +119,39 @@ void	CGIprocess::_clearAlloc(void)
 		delete[] this->_envExec;
 }
 
-void	CGIprocess::_runCGI(void)
+void	CGIprocess::_endCGI(bool err)
 {
+	if (err)
+		kill(this->_pid, 9);
+	else
+	{
+		int status;
+
+		int w = waitpid(this->_pid, &status, WNOHANG);
+		if (w == -1)
+		{
+			if (errno != ECHILD)
+				kill(this->_pid, 9);
+		}
+		else if (w == 0)
+		{
+			kill(this->_pid, 9);
+		}
+	}
+
+	close(this->fds[0]);
+	close(this->fds[1]);
+
+	this->_clearAlloc();
+	this->_env.clear();
+	this->_body.clear();
+	this->respone.clear();
+}
+
+void	CGIprocess::runCGI(const Request &req)
+{
+	this->_setupEnv(req);
+	this->_createArgs();
 	if (pipe(this->_inPipe) < -1)
 	{
 		this->_clearAlloc();
@@ -136,6 +167,10 @@ void	CGIprocess::_runCGI(void)
 	this->_pid = fork();
 	if (this->_pid == -1)
 	{
+		close(this->_inPipe[0]);
+		close(this->_inPipe[1]);
+		close(this->_outPipe[0]);
+		close(this->_outPipe[1]);
 		this->_clearAlloc();
 		throw InternalError();
 	}
@@ -153,6 +188,54 @@ void	CGIprocess::_runCGI(void)
 	else
 	{
 		this->_clearAlloc();
+		close(this->_inPipe[0]);
+		close(this->_outPipe[1]);
+		this->fds[0] = this->_inPipe[1];
+		this->fds[1] = this->_outPipe[0];
+		if (this->_body.empty())
+			this->step = 1;
+		else
+			this->step = 0;
 	}
-	
+}
+
+void	CGIprocess::sendBody(void)
+{
+	int	err = write(this->fds[0], this->_body.c_str(), this->_body.size());
+	if (err == -1)
+	{
+		std::cout << "Error while sending body to cgi" << std::endl;
+		this->endCGI(true);
+		throw InternalError();
+	}
+	else if (err < static_cast<int>(this->_body.size()))
+	{
+		std::cout << "Not the whole body sent" << std::endl;
+	}
+	else
+	{
+		std::cout << "Body sent to cgi" << std::endl;
+		this->step = 1;
+	}
+}
+
+void	CGIprocess::readResponse(void)
+{
+	char	buf[BUFFER_SIZE + 1];
+	memset((void*)buf, 0, BUFFER_SIZE + 1);
+
+	int bytesRead = read(this->fds[1], buf, BUFFER_SIZE);
+	if (bytesRead == -1)
+	{
+		std::cout << "Error while reading response" << std::endl;
+		this->endCGI(true);
+		throw InternalError();
+	}
+	else
+	{
+		buf[bytesRead] = '\0';
+		this->response += buf;
+		std::cout << bytesRead << " bytes read on cgi" << std::endl;
+
+	}
 }
