@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 16:13:32 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/08 14:36:03 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/13 10:51:34 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Request.hpp"
@@ -20,6 +20,7 @@ Request	&Request::operator=(const Request& rhs)
 
 	this->_method = rhs._method;
 	this->_target = rhs._target;
+	this->_query = rhs._query;
 	this->_pVersion = rhs._pVersion;
 	this->_host = rhs._host;
 	this->_port = rhs._port;
@@ -33,6 +34,7 @@ void Request::printAttributes(void) const
 {
 	std::cout << "Method: " << _method << std::endl;
 	std::cout << "Target: " << _target << std::endl;
+	std::cout << "Query: " << _query << std::endl;
 	std::cout << "HTTP Version: " << _pVersion << std::endl;
 	std::cout << "Host: " << _host << std::endl;
 	std::cout << "Port: " << _port << std::endl;
@@ -99,6 +101,19 @@ void	Request::_getRequestLine(std::string &r)
 	if (found == false)
 		this->_errorCode = 501;
 	//check target: format and get query
+	std::string tmp = this->_target.substr(0, this->_target.find("?"));
+	if (tmp.empty())
+	{
+		this->_errorCode = 400;
+		return ;
+	}
+	else if (tmp.compare(this->_target) == 0)
+		tmp.clear();
+	else
+	{
+		this->_query = this->_target.substr(tmp.size());
+		this->_target = tmp;
+	}
 }
 
 static inline std::string& rtrim(std::string& s, const char* t)
@@ -288,7 +303,7 @@ unsigned int Request::getPort() const {
     return this->_port;
 }
 
-const std::map<std::string, std::string>& Request::getHeaders() const {
+std::map<std::string, std::string>& Request::getHeaders() {
     return this->_headers;
 }
 

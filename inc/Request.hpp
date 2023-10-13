@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 15:54:23 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/08 14:35:07 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/13 10:17:19 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef REQUEST_HPP
@@ -37,7 +37,7 @@ class Request
 		const std::string& getVersion() const;
 		const std::string& getHost() const;
 		unsigned int getPort() const;
-		const std::map<std::string, std::string>& getHeaders() const;
+		std::map<std::string, std::string>& getHeaders();
 		const std::string& getBody() const;
 		unsigned int getErrorCode() const;
 

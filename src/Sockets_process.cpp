@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/08 12:39:57 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/13 07:38:00 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/13 10:37:28 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Sockets.hpp"
@@ -56,7 +56,7 @@ void	Sockets::_processMethod(void)
 
 bool	Sockets::_isCGI(void)
 {
-	return (false);
+	return (true);
 }
 
 void	Sockets::_processCGI(void)
@@ -72,7 +72,7 @@ void	Sockets::process(void)
 	if (this->oRequest.getErrorCode())
 		this->response = DefaultErrorPages::generate(
 			this->oRequest.getErrorCode(), "Error while parsing the request");
-	//process the request and return std::string with the server response
+	this->oRequest.printAttributes();
 	try
 	{
 		//before check if its a CGI call

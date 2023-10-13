@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 18:01:04 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/13 07:57:27 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/13 10:35:13 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "CGIprocess.hpp"
@@ -20,8 +20,12 @@ CGIprocess::~CGIprocess(void)
 {
 }
 
-void CGIprocess::_setupEnv(const Request &req)
+void CGIprocess::_setupEnv(Request &req)
 {
+	//get scriptPath
+	this->_scriptPath = "/home/ubuntu/webserv/cgi-bin/testGET.php";
+
+	this->_env["REDIRECT_STATUS"] = "200";
 	this->_env["REQUEST_METHOD"] = req.getMethod();
 	this->_env["QUERY_STRING"] = req.getQuery();
 	this->_env["CONTENT_TYPE"] = req.getHeaders()["CONTENT-TYPE"];
@@ -55,7 +59,7 @@ void CGIprocess::_setupEnv(const Request &req)
 
 void	CGIprocess::_getEnvExec(void)
 {
-	int	j = 0;
+	size_t	j = 0;
 
 	try
 	{
@@ -77,7 +81,7 @@ void	CGIprocess::_getEnvExec(void)
 		delete[] this->_envExec;
 		throw;
 	}
-	this->envExec[j] = NULL;
+	this->_envExec[j] = NULL;
 }
 
 void	CGIprocess::_createArgs(void)
@@ -113,13 +117,13 @@ void	CGIprocess::_clearAlloc(void)
 		delete[] this->_args[1];
 		delete[] this->_args;
 
-		int	end = this->_env.size();
+		size_t	end = this->_env.size();
 		for (size_t i = 0; i <= end; i++)
 			delete[] this->_envExec[i];
 		delete[] this->_envExec;
 }
 
-void	CGIprocess::_endCGI(bool err)
+void	CGIprocess::endCGI(bool err)
 {
 	if (err)
 		kill(this->_pid, 9);
@@ -145,10 +149,10 @@ void	CGIprocess::_endCGI(bool err)
 	this->_clearAlloc();
 	this->_env.clear();
 	this->_body.clear();
-	this->respone.clear();
+	this->response.clear();
 }
 
-void	CGIprocess::runCGI(const Request &req)
+void	CGIprocess::runCGI(Request &req)
 {
 	this->_setupEnv(req);
 	this->_createArgs();
