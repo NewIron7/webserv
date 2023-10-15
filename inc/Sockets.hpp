@@ -37,6 +37,8 @@ class Sockets
 		void	setup(int sock, int sfd, int sp, bool m = false);
 		void	changeEvents(uint32_t ev, int epfd);
 
+		void	printAttributes(void);
+
 		void				process(void);
 
 		bool				main;

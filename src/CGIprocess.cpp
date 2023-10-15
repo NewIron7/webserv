@@ -6,24 +6,81 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 18:01:04 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/13 10:35:13 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/15 11:45:38 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "CGIprocess.hpp"
 
-CGIprocess::CGIprocess(void): _envExec(NULL), _exitStatus(0)
+size_t	CGIprocess::_getBodyLength(void)
+{
+	std::string	res = this->response;
+
+	std::string	tmp = res.substr(0, res.find("\r\n"));
+	while (tmp.size())
+	{
+		if (tmp.compare(res) == 0)
+		{
+			this->error = 500;
+			return (0);
+		}
+		res.erase(0, tmp.size() + 2);
+		tmp = res.substr(0, res.find("\r\n"));
+	}
+	std::cout << "body:" << res << std::endl;
+	return (res.size() - 2);
+}
+
+void	CGIprocess::addHeaders(void)
+{
+	if (this->response.empty())
+		return ;
+	size_t	l = this->_getBodyLength();
+	if (this->error)
+		return ;
+	std::string	cl = "Content-Length: " + SSTR(l);
+	cl += "\r\n";
+	this->response.insert(0, cl);
+
+	if (this->response.find("HTTP/1.1") == std::string::npos)
+		this->response.insert(0, "HTTP/1.1 200 OK\r\n");
+}
+
+void CGIprocess::printAllAttributes() {
+	std::cout << "Public Attributes:" << std::endl;
+	std::cout << "done: " << this->done << std::endl;
+	std::cout << "step: " << this->step << std::endl;
+	std::cout << "clientFd: " << this->clientFd << std::endl;
+	std::cout << "response: " << this->response << std::endl;
+	std::cout << "fds[0]: " << this->fds[0] << std::endl;
+	std::cout << "fds[1]: " << this->fds[1] << std::endl;
+
+	std::cout << "event[0].data.fd: " << event[0].data.fd << std::endl;
+	std::cout << "event[1].data.fd: " << event[1].data.fd << std::endl;
+
+	std::cout << "Private Attributes:" << std::endl;
+	std::cout << "_env.size(): " << this->_env.size() << std::endl;
+	std::cout << "_body: " << this->_body << std::endl;
+	std::cout << "_cgiPath: " << this->_cgiPath << std::endl;
+}
+
+
+CGIprocess::CGIprocess(void): done(false), error(0), _envExec(NULL), _exitStatus(0)
 {
 
 }
 
 CGIprocess::~CGIprocess(void)
 {
+	//clear all for ctrl c
 }
 
 void CGIprocess::_setupEnv(Request &req)
 {
-	//get scriptPath
+	std::cout << "[CGI] Setup env" << std::endl;
+
+	//get scriptPath and cgi path
 	this->_scriptPath = "/home/ubuntu/webserv/cgi-bin/testGET.php";
+	this->_cgiPath = "/home/ubuntu/webserv/cgi-bin/php-cgi";
 
 	this->_env["REDIRECT_STATUS"] = "200";
 	this->_env["REQUEST_METHOD"] = req.getMethod();
@@ -53,12 +110,14 @@ void CGIprocess::_setupEnv(Request &req)
 	this->_env["HTTP_HOST"] = req.getHeaders()["HOST"];
 	this->_env["HTTP_COOKIE"] = req.getHeaders()["COOKIE"];
 	this->_env["HTTP_ACCEPT"] = req.getHeaders()["ACCEPT"];
-	
+
 	this->_getEnvExec();
 }
 
 void	CGIprocess::_getEnvExec(void)
 {
+	std::cout << "[CGI] Setup exec env" << std::endl;
+
 	size_t	j = 0;
 
 	try
@@ -86,6 +145,8 @@ void	CGIprocess::_getEnvExec(void)
 
 void	CGIprocess::_createArgs(void)
 {
+	std::cout << "[CGI] Creation args" << std::endl;
+
 	int	i = -1;
 	try
 	{
@@ -107,24 +168,29 @@ void	CGIprocess::_createArgs(void)
 		if (i >= 0)
 			delete[] this->_args;
 		throw;
-			
+
 	}
 }
 
 void	CGIprocess::_clearAlloc(void)
 {
-		delete[] this->_args[0];
-		delete[] this->_args[1];
-		delete[] this->_args;
+	std::cout << "[CGI] clear alloc" << std::endl;
 
-		size_t	end = this->_env.size();
-		for (size_t i = 0; i <= end; i++)
-			delete[] this->_envExec[i];
-		delete[] this->_envExec;
+	delete[] this->_args[0];
+	delete[] this->_args[1];
+	delete[] this->_args;
+
+	size_t	end = this->_env.size();
+	for (size_t i = 0; i <= end; i++)
+		delete[] this->_envExec[i];
+	delete[] this->_envExec;
 }
 
 void	CGIprocess::endCGI(bool err)
 {
+	std::cout << "[CGI] end cgi" << std::endl;
+
+	//this->printAllAttributes();
 	if (err)
 		kill(this->_pid, 9);
 	else
@@ -150,10 +216,14 @@ void	CGIprocess::endCGI(bool err)
 	this->_env.clear();
 	this->_body.clear();
 	this->response.clear();
+
+	this->done = false;
 }
 
 void	CGIprocess::runCGI(Request &req)
 {
+	std::cout << "[CGI] Run cgi" << std::endl;
+
 	this->_setupEnv(req);
 	this->_createArgs();
 	if (pipe(this->_inPipe) < -1)
@@ -191,7 +261,7 @@ void	CGIprocess::runCGI(Request &req)
 	}
 	else
 	{
-		this->_clearAlloc();
+		//this->_clearAlloc();
 		close(this->_inPipe[0]);
 		close(this->_outPipe[1]);
 		this->fds[0] = this->_inPipe[1];
@@ -200,6 +270,7 @@ void	CGIprocess::runCGI(Request &req)
 			this->step = 1;
 		else
 			this->step = 0;
+		std::cout << "[CGI] CGI launched !" << std::endl;
 	}
 }
 
@@ -225,10 +296,10 @@ void	CGIprocess::sendBody(void)
 
 void	CGIprocess::readResponse(void)
 {
-	char	buf[BUFFER_SIZE + 1];
-	memset((void*)buf, 0, BUFFER_SIZE + 1);
+	char	buf[BUFFER_SIZE_CGI + 1];
+	memset((void*)buf, 0, BUFFER_SIZE_CGI + 1);
 
-	int bytesRead = read(this->fds[1], buf, BUFFER_SIZE);
+	int bytesRead = read(this->fds[1], buf, BUFFER_SIZE_CGI);
 	if (bytesRead == -1)
 	{
 		std::cout << "Error while reading response" << std::endl;
@@ -240,6 +311,5 @@ void	CGIprocess::readResponse(void)
 		buf[bytesRead] = '\0';
 		this->response += buf;
 		std::cout << bytesRead << " bytes read on cgi" << std::endl;
-
 	}
 }

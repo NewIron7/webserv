@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 17:44:50 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/13 10:28:27 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/15 11:04:44 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef CGIPROCESS_HPP
@@ -26,7 +26,7 @@
 # include "Request.hpp"
 # include "InternalError.hpp"
 
-# define BUFFER_SIZE 64
+# define BUFFER_SIZE_CGI 64
 
 class CGIprocess
 {
@@ -34,22 +34,30 @@ class CGIprocess
 		CGIprocess(void);
 		~CGIprocess(void);
 
+		bool				done;
+
 		unsigned int		step;
 		int					fds[2];
 		struct sockaddr_in	info;
 		socklen_t			size;
-		struct epoll_event	event;
+		struct epoll_event	event[2];
 		
 		int					clientFd;
+
+		unsigned int		error;
 
 		std::string			response;
 		
 		void	runCGI(Request &req);
 
+		void	addHeaders(void);
+
 		void	sendBody(void);
 		void	readResponse(void);
 
 		void	endCGI(bool err);
+	
+		void	printAllAttributes(void);
 	private:
 		std::map<std::string, std::string>	_env;
 		char								**_envExec;
@@ -70,6 +78,8 @@ class CGIprocess
 		void	_createArgs(void);
 
 		void	_clearAlloc(void);
+
+		size_t	_getBodyLength(void);
 };
 
 #endif

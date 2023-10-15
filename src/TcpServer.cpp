@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 14:50:50 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/13 10:37:37 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/15 12:33:00 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "TcpServer.hpp"
@@ -24,27 +24,46 @@ TcpServer::~TcpServer(void)
 	return ;
 }
 
+void TcpServer::_printCGIstreams() {
+	std::cout << "Contents of _CGIstreams:" << std::endl;
+	std::map<int, Sockets*>::iterator it;
+	for (it = _CGIstreams.begin(); it != _CGIstreams.end(); ++it) {
+		std::cout << "Key: " << it->first << std::endl;
+		Sockets* socketPtr = it->second;
+		if (socketPtr != NULL) {
+			socketPtr->printAttributes(); // Assuming the Sockets class has a printAttributes method
+		} else {
+			std::cout << "Value is NULL" << std::endl;
+		}
+	}
+}
+
+
 void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
 {
-	if (this->_streams.find(ev.data.fd) == this->_streams.end())
+	if (this->_CGIstreams.find(ev.data.fd) != this->_CGIstreams.end())
 	{
 		Sockets *client = this->_CGIstreams[ev.data.fd];
 		CGIprocess &cgi = client->cgi;
-	
-		cgi.sendBody();
-		
-		if (cgi.step == 1)
+
+		if (cgi.step == 0)
 		{
-			this->_remove_cgi(*client);
-			this->_add_cgi(*client);
+			std::cout << "[CGI] EPOLLOUT event" << std::endl;
+			cgi.sendBody();
+			this->_remove_cgi(*client, 0);
 		}
+		//else if (cgi.response.empty() == false)
+		//{
+		//	cgi.done = true;
+		//}
+
 		return ;
 	}
 
 	Sockets	&client = this->_streams[ev.data.fd];
 
 	//std::cout << "[] EPOLLOUT event" << std::endl;
-	
+
 	if (client.resSent)
 	{
 		//std::cout << "\033[33m[-] Response already sent\033[0m" << std::endl;
@@ -70,18 +89,17 @@ void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
 		client.process();
 		if (client.CGIrun)
 		{
-			std::cout << "CGI is called" << std::endl;
 			this->_add_cgi(client);
 			return ;
 		}
 
 		client.resGen = true;
 		client.request.clear();
-		
+
 		std::cout << "\033[35m[] Response ->\033[0m" << std::endl;
 		std::cout << "\033[2m" << client.response << "\033[0m" << std::endl;
 	}
-	
+
 	int	err = write(client.socket, client.response.c_str(),
 			client.response.size());
 	if (err == -1)
@@ -115,13 +133,14 @@ void	TcpServer::_processEPOLLIN(struct epoll_event &ev)
 	{
 		Sockets	*client = this->_CGIstreams[ev.data.fd];
 		CGIprocess	&cgi = client->cgi;
-	
+
 		cgi.readResponse();
 	}
 	else
 	{
 		Sockets	&client = this->_streams[ev.data.fd];
 
+		//client.printAttributes();
 		char	buf[BUFFER_SIZE + 1];
 		memset((void*)buf, 0, BUFFER_SIZE + 1);
 
@@ -155,9 +174,11 @@ void	TcpServer::_processEPOLLERR(struct epoll_event &ev)
 	{
 		Sockets *client = this->_CGIstreams[ev.data.fd];
 		CGIprocess &cgi = client->cgi;
-	
+
+		client->CGIrun = false;
+		this->_remove_cgi(*client, 0);
+		this->_remove_cgi(*client, 1);
 		cgi.endCGI(true);
-		this->_remove_cgi(*client);
 	}
 }
 
@@ -170,13 +191,18 @@ void	TcpServer::_processEPOLLHUP(struct epoll_event &ev)
 		std::cout << "\033[31m[-] [ " << client.socket << " ] disconnected\033[0m" << std::endl;
 		this->_remove_client(client);
 	}
-	else
+	else if (this->_CGIstreams.find(ev.data.fd) != this->_CGIstreams.end())
 	{
+		std::cout << "CGI epollhup" << std::endl;
 		Sockets *client = this->_CGIstreams[ev.data.fd];
 		CGIprocess &cgi = client->cgi;
-	
+
+		//cgi.printAllAttributes();
+
+		client->CGIrun = false;
+		this->_remove_cgi(*client, 0);
+		this->_remove_cgi(*client, 1);
 		cgi.endCGI(false);
-		this->_remove_cgi(*client);
 	}
 }
 
@@ -201,6 +227,46 @@ void	TcpServer::_processEvent(struct epoll_event &ev)
 		std::cout << "Event not handle yet by the program" << std::endl;
 }
 
+void	TcpServer::_checkInactiveCGI(struct epoll_event *evlist, int evNb)
+{
+	std::map<int, Sockets*>::iterator it;
+	for (it = this->_CGIstreams.begin(); it != this->_CGIstreams.end(); ++it)
+	{
+		Sockets* client = it->second;
+		CGIprocess	&cgi = client->cgi;
+
+		if (client->CGIrun == false)
+			continue ;
+
+		if ((cgi.step = 1) && (cgi.response.empty() == false))
+		{
+			bool active = false;
+			for (int i = 0; i < evNb; i++)
+			{
+				int fd = evlist[i].data.fd;
+				if (fd == cgi.fds[1])
+				{
+					active = true;
+					break ;
+				}
+			}
+			if (active == false)
+			{
+				this->_remove_cgi(*client, 1);
+				cgi.done = true;
+				cgi.addHeaders();
+				client->response = cgi.response;
+				cgi.endCGI(false);
+				client->CGIrun = false;
+				client->resGen = true;
+
+				std::cout << "\033[35m[] Response ->\033[0m" << std::endl;
+				std::cout << "\033[2m" << client->response << "\033[0m" << std::endl;
+			}
+		}
+	}
+}
+
 void	TcpServer::run(void)
 {
 	struct epoll_event	evlist[MAXEVENT];
@@ -220,6 +286,7 @@ void	TcpServer::run(void)
 			continue ;
 		for (int i = 0; i < evNb; i++)
 			this->_processEvent(evlist[i]);
+		this->_checkInactiveCGI(evlist, evNb);
 	}
 }
 
@@ -249,36 +316,50 @@ void	TcpServer::_add_client(const int &fdServer)
 
 void	TcpServer::_add_cgi(Sockets &client)
 {
+	std::cout << "[Server] Adding new CGI" << std::endl;
 	CGIprocess	&cgi = client.cgi;
 
 	cgi.size = sizeof(cgi.info);
 	memset((void*)&cgi.info, 0, cgi.size);
 
-	//replace that by a map of pointers to socket
-	this->_CGIstreams[cgi.fds[cgi.step]] = &client;
+	this->_CGIstreams[cgi.fds[0]] = &client;
+	this->_CGIstreams[cgi.fds[1]] = &client;
 	cgi.clientFd = client.socket;
 
-	if (cgi.fds[cgi.step] == 0)
-		cgi.event.events = EPOLLOUT;
-	else
-		cgi.event.events = EPOLLIN;
-	cgi.event.events |= EPOLLRDHUP;
-	cgi.event.events |= EPOLLPRI;
+	cgi.event[0].events = EPOLLOUT;
+	cgi.event[1].events = EPOLLIN;
+
+	cgi.event[0].events |= EPOLLRDHUP;
+	cgi.event[0].events |= EPOLLPRI;
+
+	cgi.event[1].events |= EPOLLRDHUP;
+	cgi.event[1].events |= EPOLLPRI;
+
+	cgi.event[0].data.fd = cgi.fds[0];
+	cgi.event[1].data.fd = cgi.fds[1];
 
 
-	if (epoll_ctl(this->_epfd, EPOLL_CTL_ADD, cgi.fds[cgi.step],
-				&cgi.event) == -1)
+	if (epoll_ctl(this->_epfd, EPOLL_CTL_ADD, cgi.fds[0],
+				&cgi.event[0]) == -1)
 		throw InternalError();
+	if (epoll_ctl(this->_epfd, EPOLL_CTL_ADD, cgi.fds[1],
+				&cgi.event[1]) == -1)
+		throw InternalError();
+
+	//cgi.printAllAttributes();
 }
 
-void	TcpServer::_remove_cgi(Sockets &client)
+void	TcpServer::_remove_cgi(Sockets &client, unsigned int nb)
 {
 	CGIprocess	&cgi = client.cgi;
 
-	if (epoll_ctl(this->_epfd, EPOLL_CTL_DEL, cgi.fds[!cgi.step],
-				&cgi.event) == -1)
+	if (epoll_ctl(this->_epfd, EPOLL_CTL_DEL, cgi.fds[nb],
+				&cgi.event[nb]) == -1)
+	{
+		std::cout << "Error while removing cgi from epoll" << std::endl;
 		throw InternalError();
-	this->_CGIstreams.erase(cgi.fds[!cgi.step]);
+	}
+	this->_CGIstreams.erase(cgi.fds[nb]);
 }
 
 void	TcpServer::_remove_client(Sockets &client)
@@ -286,7 +367,8 @@ void	TcpServer::_remove_client(Sockets &client)
 	if (epoll_ctl(this->_epfd, EPOLL_CTL_DEL, client.socket,
 				&client.event) == -1)
 		throw InternalError();
-	this->_streams.erase(client.socket);
+	if (this->_streams.find(client.socket) != this->_streams.end())
+		this->_streams.erase(client.socket);
 }
 
 void	TcpServer::create(unsigned int port)

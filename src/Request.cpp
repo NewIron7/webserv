@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 16:13:32 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/13 10:51:34 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/15 11:37:11 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Request.hpp"
@@ -111,7 +111,7 @@ void	Request::_getRequestLine(std::string &r)
 		tmp.clear();
 	else
 	{
-		this->_query = this->_target.substr(tmp.size());
+		this->_query = this->_target.substr(tmp.size() + 1);
 		this->_target = tmp;
 	}
 }

@@ -11,6 +11,37 @@
 /* ************************************************************************** */
 #include "Sockets.hpp"
 
+void Sockets::printAttributes() {
+    std::cout << "Attributes of the Sockets class:" << std::endl;
+    std::cout << "main: " << main << std::endl;
+    std::cout << "server: " << server << std::endl;
+    std::cout << "socket: " << socket << std::endl;
+    
+    // Print the sockaddr_in structure (info)
+    std::cout << "info.sin_family: " << info.sin_family << std::endl;
+    std::cout << "info.sin_port: " << ntohs(info.sin_port) << std::endl;
+    std::cout << "info.sin_addr.s_addr: " << inet_ntoa(info.sin_addr) << std::endl;
+    // Add more fields from info as needed
+    
+    std::cout << "size: " << size << std::endl;
+    std::cout << "port: " << port << std::endl;
+
+    std::cout << "event.events: " << event.events << std::endl;
+    std::cout << "event.data.fd: " << event.data.fd << std::endl;
+    
+    std::cout << "request: " << request << std::endl;
+    
+    // You can print the attributes of the oRequest object if it has public members
+
+    std::cout << "reqGot: " << reqGot << std::endl;
+    std::cout << "response: " << response << std::endl;
+    std::cout << "resGen: " << resGen << std::endl;
+    std::cout << "resSent: " << resSent << std::endl;
+    std::cout << "CGIrun: " << CGIrun << std::endl;
+
+    // Print the attributes of the cgi object if it has public members
+}
+
 Sockets::Sockets(void):
 	main(false), server(-1), socket(-1), port(-1), reqGot(false), resGen(false)
 	,resSent(false), CGIrun(false)

@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/08 12:39:57 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/13 10:37:28 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/15 05:32:16 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Sockets.hpp"
@@ -62,6 +62,7 @@ bool	Sockets::_isCGI(void)
 void	Sockets::_processCGI(void)
 {
 	//execute CGI
+	std::cout << "*****[CGI CALLED]******" << std::endl;
 	this->cgi.runCGI(this->oRequest);
 	this->CGIrun = true;
 }

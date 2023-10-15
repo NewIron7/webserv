@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 14:27:01 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/13 10:07:38 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/15 10:18:28 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef TCPSERVER_HPP
@@ -52,13 +52,17 @@ class TcpServer
 		void	_remove_client(Sockets &client);
 		
 		void	_add_cgi(Sockets &client);
-		void	_remove_cgi(Sockets &client);
+		void	_remove_cgi(Sockets &client, unsigned int nb);
 		
 		void	_processEvent(struct epoll_event &ev);
 		void	_processEPOLLIN(struct epoll_event &ev);		
 		void	_processEPOLLOUT(struct epoll_event &ev);		
 		void	_processEPOLLERR(struct epoll_event &ev);
 		void	_processEPOLLHUP(struct epoll_event &ev);
+
+		void	_checkInactiveCGI(struct epoll_event *evlist, int evNb);
+
+		void	_printCGIstreams(void);
 
 		int									_epfd;
 		std::map<int, Sockets>				_streams;
