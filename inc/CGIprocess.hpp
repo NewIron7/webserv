@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 17:44:50 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/15 11:04:44 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/16 11:59:38 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef CGIPROCESS_HPP
@@ -35,6 +35,7 @@ class CGIprocess
 		~CGIprocess(void);
 
 		bool				done;
+		bool				c;
 
 		unsigned int		step;
 		int					fds[2];

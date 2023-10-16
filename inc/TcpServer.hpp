@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 14:27:01 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/15 10:18:28 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/16 10:11:49 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef TCPSERVER_HPP
@@ -51,7 +51,7 @@ class TcpServer
 		void	_add_client(const int &fdServer);
 		void	_remove_client(Sockets &client);
 		
-		void	_add_cgi(Sockets &client);
+		void	_add_cgi(Sockets &client, unsigned int nb);
 		void	_remove_cgi(Sockets &client, unsigned int nb);
 		
 		void	_processEvent(struct epoll_event &ev);

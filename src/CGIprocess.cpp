@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 18:01:04 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/15 11:45:38 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/16 12:00:15 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "CGIprocess.hpp"
@@ -54,8 +54,8 @@ void CGIprocess::printAllAttributes() {
 	std::cout << "fds[0]: " << this->fds[0] << std::endl;
 	std::cout << "fds[1]: " << this->fds[1] << std::endl;
 
-	std::cout << "event[0].data.fd: " << event[0].data.fd << std::endl;
-	std::cout << "event[1].data.fd: " << event[1].data.fd << std::endl;
+	//std::cout << "event[0].data.fd: " << event[0].data.fd << std::endl;
+	//std::cout << "event[1].data.fd: " << event[1].data.fd << std::endl;
 
 	std::cout << "Private Attributes:" << std::endl;
 	std::cout << "_env.size(): " << this->_env.size() << std::endl;
@@ -64,7 +64,7 @@ void CGIprocess::printAllAttributes() {
 }
 
 
-CGIprocess::CGIprocess(void): done(false), error(0), _envExec(NULL), _exitStatus(0)
+CGIprocess::CGIprocess(void): done(false), c(true), error(0), _envExec(NULL), _exitStatus(0)
 {
 
 }
@@ -76,7 +76,7 @@ CGIprocess::~CGIprocess(void)
 
 void CGIprocess::_setupEnv(Request &req)
 {
-	std::cout << "[CGI] Setup env" << std::endl;
+	//std::cout << "[CGI] Setup env" << std::endl;
 
 	//get scriptPath and cgi path
 	this->_scriptPath = "/home/ubuntu/webserv/cgi-bin/testGET.php";
@@ -116,7 +116,7 @@ void CGIprocess::_setupEnv(Request &req)
 
 void	CGIprocess::_getEnvExec(void)
 {
-	std::cout << "[CGI] Setup exec env" << std::endl;
+	//std::cout << "[CGI] Setup exec env" << std::endl;
 
 	size_t	j = 0;
 
@@ -145,7 +145,7 @@ void	CGIprocess::_getEnvExec(void)
 
 void	CGIprocess::_createArgs(void)
 {
-	std::cout << "[CGI] Creation args" << std::endl;
+	//std::cout << "[CGI] Creation args" << std::endl;
 
 	int	i = -1;
 	try
@@ -174,7 +174,7 @@ void	CGIprocess::_createArgs(void)
 
 void	CGIprocess::_clearAlloc(void)
 {
-	std::cout << "[CGI] clear alloc" << std::endl;
+	//std::cout << "[CGI] clear alloc" << std::endl;
 
 	delete[] this->_args[0];
 	delete[] this->_args[1];
@@ -188,7 +188,7 @@ void	CGIprocess::_clearAlloc(void)
 
 void	CGIprocess::endCGI(bool err)
 {
-	std::cout << "[CGI] end cgi" << std::endl;
+	//std::cout << "[CGI] end cgi" << std::endl;
 
 	//this->printAllAttributes();
 	if (err)
@@ -211,6 +211,7 @@ void	CGIprocess::endCGI(bool err)
 
 	close(this->fds[0]);
 	close(this->fds[1]);
+	this->c = true;
 
 	this->_clearAlloc();
 	this->_env.clear();
@@ -222,7 +223,7 @@ void	CGIprocess::endCGI(bool err)
 
 void	CGIprocess::runCGI(Request &req)
 {
-	std::cout << "[CGI] Run cgi" << std::endl;
+	//std::cout << "[CGI] Run cgi" << std::endl;
 
 	this->_setupEnv(req);
 	this->_createArgs();
@@ -261,11 +262,11 @@ void	CGIprocess::runCGI(Request &req)
 	}
 	else
 	{
-		//this->_clearAlloc();
 		close(this->_inPipe[0]);
 		close(this->_outPipe[1]);
 		this->fds[0] = this->_inPipe[1];
 		this->fds[1] = this->_outPipe[0];
+		this->c = false;
 		if (this->_body.empty())
 			this->step = 1;
 		else
