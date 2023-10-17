@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 14:50:50 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/16 12:09:46 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/17 12:42:01 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "TcpServer.hpp"
@@ -86,6 +86,7 @@ void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
 		client.process();
 		if (client.CGIrun)
 		{
+			std::cout << "CGI step: " << client.cgi.step << std::endl;
 			if (client.cgi.step)
 				this->_add_cgi(client, 1);
 			else
@@ -186,7 +187,7 @@ void	TcpServer::_processEPOLLERR(struct epoll_event &ev)
 
 void	TcpServer::_processEPOLLHUP(struct epoll_event &ev)
 {
-	std::cout << "[] EPOLLHUP event" << std::endl;
+	std::cout << "[" << ev.data.fd << "] EPOLLHUP event" << std::endl;
 	if (this->_streams.find(ev.data.fd) != this->_streams.end())
 	{
 		Sockets &client = this->_streams[ev.data.fd];
@@ -199,7 +200,7 @@ void	TcpServer::_processEPOLLHUP(struct epoll_event &ev)
 		Sockets *client = this->_CGIstreams[ev.data.fd];
 		CGIprocess &cgi = client->cgi;
 
-		//cgi.printAllAttributes();
+		cgi.printAllAttributes();
 
 		client->CGIrun = false;
 		this->_remove_cgi(*client, 0);
@@ -258,12 +259,18 @@ void	TcpServer::_checkInactiveCGI(struct epoll_event *evlist, int evNb)
 				cgi.done = true;
 				cgi.addHeaders();
 				client->response = cgi.response;
+				
+				this->_remove_cgi(*client, 0);
+				this->_remove_cgi(*client, 1);
+				
 				cgi.endCGI(false);
 				client->CGIrun = false;
 				client->resGen = true;
 
 				std::cout << "\033[35m[] Response ->\033[0m" << std::endl;
 				std::cout << "\033[2m" << client->response << "\033[0m" << std::endl;
+			
+				break ;
 			}
 		}
 	}
@@ -352,7 +359,9 @@ void	TcpServer::_remove_cgi(Sockets &client, unsigned int nb)
 	if (this->_CGIstreams.find(cgi.fds[nb]) == this->_CGIstreams.end())
 		return ;
 
+	this->_printCGIstreams();
 	this->_CGIstreams.erase(cgi.fds[nb]);
+	this->_printCGIstreams();
 	
 	if ((cgi.c == false) && (epoll_ctl(this->_epfd, EPOLL_CTL_DEL, cgi.fds[nb],
 				&cgi.event[nb]) == -1))

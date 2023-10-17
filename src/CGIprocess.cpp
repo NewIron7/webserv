@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 18:01:04 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/16 12:00:15 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/17 12:36:20 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "CGIprocess.hpp"
@@ -188,7 +188,7 @@ void	CGIprocess::_clearAlloc(void)
 
 void	CGIprocess::endCGI(bool err)
 {
-	//std::cout << "[CGI] end cgi" << std::endl;
+	std::cout << "[CGI] end cgi" << std::endl;
 
 	//this->printAllAttributes();
 	if (err)
@@ -213,6 +213,16 @@ void	CGIprocess::endCGI(bool err)
 	close(this->fds[1]);
 	this->c = true;
 
+	std::cout << "close : " << this->fds[0] << " & " << this->fds[1] << std::endl;
+
+	//this->fds[0] = -1;
+	//this->fds[1] = -1;
+
+	this->_inPipe[0] = -1;
+	this->_inPipe[1] = -1;
+	this->_outPipe[0] = -1;
+	this->_outPipe[1] = -1;
+
 	this->_clearAlloc();
 	this->_env.clear();
 	this->_body.clear();
@@ -224,6 +234,8 @@ void	CGIprocess::endCGI(bool err)
 void	CGIprocess::runCGI(Request &req)
 {
 	//std::cout << "[CGI] Run cgi" << std::endl;
+
+	this->c = false;
 
 	this->_setupEnv(req);
 	this->_createArgs();
