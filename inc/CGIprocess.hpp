@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 17:44:50 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/16 11:59:38 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/24 15:35:33 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef CGIPROCESS_HPP
@@ -57,7 +57,9 @@ class CGIprocess
 		void	readResponse(void);
 
 		void	endCGI(bool err);
-	
+
+		bool	isError(void) const;
+
 		void	printAllAttributes(void);
 	private:
 		std::map<std::string, std::string>	_env;

@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 18:01:04 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/17 12:36:20 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/10/24 16:25:28 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "CGIprocess.hpp"
@@ -45,6 +45,7 @@ void	CGIprocess::addHeaders(void)
 		this->response.insert(0, "HTTP/1.1 200 OK\r\n");
 }
 
+
 void CGIprocess::printAllAttributes() {
 	std::cout << "Public Attributes:" << std::endl;
 	std::cout << "done: " << this->done << std::endl;
@@ -79,8 +80,9 @@ void CGIprocess::_setupEnv(Request &req)
 	//std::cout << "[CGI] Setup env" << std::endl;
 
 	//get scriptPath and cgi path
-	this->_scriptPath = "/home/ubuntu/webserv/cgi-bin/testGET.php";
-	this->_cgiPath = "/home/ubuntu/webserv/cgi-bin/php-cgi";
+	//this->_scriptPath = "/home/hboissel/webserv/cgi-bin/testGET.php";
+	this->_scriptPath = "/home/hboissel/webserv/cgi-bin/testPOST.php";
+	this->_cgiPath = "/home/hboissel/webserv/cgi-bin/php-cgi";
 
 	this->_env["REDIRECT_STATUS"] = "200";
 	this->_env["REQUEST_METHOD"] = req.getMethod();
@@ -110,6 +112,8 @@ void CGIprocess::_setupEnv(Request &req)
 	this->_env["HTTP_HOST"] = req.getHeaders()["HOST"];
 	this->_env["HTTP_COOKIE"] = req.getHeaders()["COOKIE"];
 	this->_env["HTTP_ACCEPT"] = req.getHeaders()["ACCEPT"];
+
+	this->_body = req.getBody();
 
 	this->_getEnvExec();
 }
@@ -239,6 +243,7 @@ void	CGIprocess::runCGI(Request &req)
 
 	this->_setupEnv(req);
 	this->_createArgs();
+
 	if (pipe(this->_inPipe) < -1)
 	{
 		this->_clearAlloc();
@@ -283,12 +288,22 @@ void	CGIprocess::runCGI(Request &req)
 			this->step = 1;
 		else
 			this->step = 0;
+		std::cout << "STEP= " << this->step << std::endl;
 		std::cout << "[CGI] CGI launched !" << std::endl;
 	}
 }
 
+bool	CGIprocess::isError(void) const
+{
+	if (this->_exitStatus || this->step == 0 || this->response.empty())
+		return (true);
+	return (false);
+}
+
 void	CGIprocess::sendBody(void)
 {
+	std::cout << "Sending body to cgi =>" << std::endl;
+	std::cout << "\033[2m" << this->_body << "\033[0m" << std::endl;
 	int	err = write(this->fds[0], this->_body.c_str(), this->_body.size());
 	if (err == -1)
 	{
