@@ -1,34 +1,32 @@
 #include "ServerLocation.hpp"
 
-ServerLocation()
+ServerLocation::ServerLocation()
 {
-	_limit_except = POST | GET | DELETE;
+	_location = "";
+	_limit_except = POST | GET;
 	_proxy_pass = "";
 	_alias = "";
 	_autoindex = false;
 	_index = "";
-	_cgi = "";
-	_location = "";
-	_upload_store = "";
 }
 
-~ServerLocation() {}
+ServerLocation::~ServerLocation() {}
 
-ServerLocation(const ServerLocation& old)
+ServerLocation::ServerLocation(const ServerLocation& old)
 {
+	_location = old.getLocation();
 	_limit_except = old.getLimit_except();
 	_proxy_pass = old.getProxy_pass();
 	_alias = old.getAlias();
 	_autoindex = old.getAutoindex();
 	_index = old.getIndex();
 	_cgi = old.getCgi();
-	_location = old.getLocation();
 	_upload_store = old.getUpload_store();
 }
 
-ServerLocation& operator=(const ServerLocation& old)
+ServerLocation& ServerLocation::operator=(const ServerLocation& old)
 {
-	if (*this == old)
+	if (this == &old)
 		return *this;
 
 	_limit_except = old.getLimit_except();
@@ -42,42 +40,42 @@ ServerLocation& operator=(const ServerLocation& old)
 	return *this;
 }
 
-int				ServerLocation::getLimit_except()
+int				ServerLocation::getLimit_except() const
 {
 	return _limit_except;
 }
 
-std::string		ServerLocation::getProxy_pass()
+std::string		ServerLocation::getProxy_pass() const
 {
 	return _proxy_pass;
 }
 
-std::string		ServerLocation::getAlias()
+std::string		ServerLocation::getAlias() const
 {
 	return _alias;
 }
 
-bool			ServerLocation::getAutoindex()
+bool			ServerLocation::getAutoindex() const
 {
 	return _autoindex;
 }
 
-std::string		ServerLocation::getIndex()
+std::string		ServerLocation::getIndex() const
 {
 	return _index;
 }
 
-std::string		ServerLocation::getCgi()
+std::map<std::string, std::string>	ServerLocation::getCgi() const
 {
 	return _cgi;
 }
 
-std::string		ServerLocation::getLocation()
+std::string		ServerLocation::getLocation() const
 {
 	return _location;
 }
 
-std::string		ServerLocation::getUpload_store()
+std::map<std::string, std::string>	ServerLocation::getUpload_store() const
 {
 	return _upload_store;
 }
@@ -107,9 +105,11 @@ void	ServerLocation::setIndex(std::string index)
 	_index = index;
 }
 
-void	ServerLocation::setCgi(std::string cgi)
+void	ServerLocation::addCgi(std::string ext, std::string exe)
 {
-	_cgi = cgi;
+	if (_cgi.count(ext))
+		throw std::exception();
+	_cgi[ext] = exe;
 }
 
 void	ServerLocation::setLocation(std::string location)
@@ -117,7 +117,9 @@ void	ServerLocation::setLocation(std::string location)
 	_location = location;
 }
 
-void	ServerLocation::setUpload_store(std::string upload_store)
+void	ServerLocation::addUpload_store(std::string ext, std::string dir)
 {
-	_upload_store = upload_store;
+	if (_upload_store.count(ext))
+		throw std::exception();
+	_upload_store[ext] = dir;
 }

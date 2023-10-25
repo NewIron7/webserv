@@ -6,7 +6,7 @@
 #    By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/10 16:09:31 by hboissel          #+#    #+#              #
-#    Updated: 2023/09/22 10:56:36 by ddelhalt         ###   ########.fr        #
+#    Updated: 2023/10/05 19:32:02 by ddelhalt         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,7 +14,7 @@ NAME        = webserv
 
 CC            = c++
 
-CFLAGS        = -Wall -Wextra -Werror -std=c++98 -pedantic-errors
+CFLAGS        = -Wall -Wextra -Werror -std=c++98 -pedantic-errors -g3
 
 # Directories
 SRCS_DIR    = src/
@@ -25,6 +25,7 @@ INCS_DIR    = inc/
 SRCS_FILES    = main.cpp\
 				Server.cpp\
 				ServerLocation.cpp
+
 OBJS_FILES    = $(SRCS_FILES:.cpp=.o)
 
 # Paths
