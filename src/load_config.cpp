@@ -1,102 +1,120 @@
 #include "Server.hpp"
+#include "ServerLocation.hpp"
 #include <fstream>
+#include <iostream>
+#include <string>
 
-bool	verifTypeStrings(std::string str)
+static ServerLocation	read_location_block(std::ifstream& file, std::string& line, int& i)
 {
-}
+	ServerLocation	location;
 
-bool	verifTypeIP(std::string str)
-{
-}
-
-bool	verifTypeBool(std::string str)
-{
-}
-
-bool	verifTypePath(std::string str)
-{
-}
-
-bool	verifTypeURL(std::string str)
-{
-}
-
-bool	verifTypeExtension(std::string str)
-{
-}
-
-bool	verifTypeNumber(std::string str)
-{
-}
-
-bool	verifTypeMethods(std::string str)
-{
-}
-
-bool	verifSingleType(int type, std::string str)
-{
-	switch (type)
+	location.setLocation(line.substr(9));
+	getline(file, line);
+	i++;
+	while (file && line.compare(0, 9, "location.") == 0)
 	{
-		case TYPE_STRINGS:
-			return verifTypeStrings(str);
-			break;
-		case TYPE_NUMBER:
-			return verifTypeNumber(str);
-			break;
-		case TYPE_IP:
-			return verifTypeIP(str);
-			break;
-		case TYPE_BOOL:
-			return verifTypeBool(str);
-			break;
-		case TYPE_PATH:
-			return verifTypePath(str);
-			break;
-		case TYPE_URL:
-			return verifTypeURL(str);
-			break;
-		case TYPE_EXTENSION:
-			return verifTypeExtension(str);
-			break;
-		case TYPE_METHODS:
-			return verifTypeMethods(str);
-			break;
-		default:
-			return false;
+		if (line.compare(9, 13, "limit_except="))
+			location.setLimit_except(line.substr(9 + 13));
+		else if (line.compare(9, 11, "proxy_pass="))
+			location.setProxy_pass(line.substr(9 + 11));
+		else if (line.compare(9, 6, "alias="))
+			location.setAlias(line.substr(9 + 6));
+		else if (line.compare(9, 10, "autoindex="))
+			location.setAutoindex(line.substr(9 + 10));
+		else if (line.compare(9, 6, "index="))
+			location.setIndex(line.substr(9 + 6));
+		else if (line.compare(9, 4, "cgi."))
+			location.addCgi(line.substr(9 + 4));
+		else if (line.compare(9, 13, "upload_store."))
+			location.addUpload_store(line.substr(9 + 13));
+		else
+		{
+			std::cerr << "Error: Invalid configuration instruction!" << std::endl
+				<< "Line " << i << ": " << line << std::endl;
+			throw std::exception();
+		}
+		getline(file, line);
+		i++;
 	}
+	return location;
 }
 
-bool	verifDoubleType(int ltype, int rtype, std::string str)
+static Server	read_server_block(std::ifstream& file, std::string& line, int& i)
 {
-	std::string::size_type	sep;
+	Server	server;
+	bool	to_read;
 
-	sep = str.find_first_of('=');
-	if (sep == std::string::npos || sep == str.length())
-		return false;
-	return verifSingleType(ltype, str.substr(0, sep)) && verifSingleType(rtype, str.substr(sep + 1, str.length() - sep - 1);
+	if (line.compare("[Server]") != 0)
+	{
+		std::cerr << "Error: All configuration instructions must be placed inside a server block!" << std::endl
+			<< "Line " << i << ": " << line << std::endl;
+		throw std::exception();
+	}
+	getline(file, line);
+	i++;
+	while (file && line.compare("[Server]") != 0)
+	{
+		to_read = true;
+		if (!line.empty() && line[0] != '#')
+		{
+			if (line.compare(0, 13, "server_names=") == 0)
+				server.setServer_names(line.substr(13));
+			else if (line.compare(0, 5, "port=") == 0)
+				server.setPort(line.substr(5));
+			else if (line.compare(0, 5, "host=") == 0)
+				server.setHost(line.substr(5));
+			else if (line.compare(0, 9, "err_code.") == 0)
+				server.addErr_code(line.substr(9));
+			else if (line.compare(0, 10, "body_size=") == 0)
+				server.setBody_size(line.substr(10));
+			else if (line.compare(0, 9, "location=") == 0)
+			{
+				server.addLocation(read_location_block(file, line, i));
+				to_read = false;
+			}
+			else
+			{
+				std::cerr << "Error: Invalid configuration instruction!" << std::endl
+					<< "Line " << i << ": " << line << std::endl;
+				throw std::exception();
+			}
+		}
+		if (to_read)
+		{
+			getline(file, line);
+			i++;
+		}
+	}
+	server.fillDefaults();
+	return server;
 }
 
-std::vector	load_config(char *filename)
+std::vector<Server>	load_config(const char *filename)
 {
 	std::ifstream	file;
-	const std::string	options = {
-		"server=",
-		"port=",
-		"ip=",
-		"default=",
-		"err_code.",
-		"body_size=",
-		"location=",
-		"location.limit_except=",
-		"location.proxy_pass=",
-		"location.alias=",
-		"location.autoindex=",
-		"location.index=",
-		"location.cgi.",
-		"location.upload_store."
-	}
+	std::string		line;
+	int				i;
+	std::vector<Server>	config;
 
 	file.open(filename);
 	if (!file.is_open())
 		throw std::exception();
+	i = 1;
+	do
+	{
+		getline(file, line);
+		i++;
+	} while (file && (line.empty() || line[0] == '#'));
+	if (!file)
+	{
+		std::cerr << "Error: Empty config!" << std::endl;
+		throw std::exception();
+	}
+	while (file)
+	{
+		server = read_server_block(file, line, i);
+		config.push_back(server);
+	}
+	file.close();
+	return config;
 }

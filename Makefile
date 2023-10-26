@@ -6,7 +6,7 @@
 #    By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/10 16:09:31 by hboissel          #+#    #+#              #
-#    Updated: 2023/10/05 19:32:02 by ddelhalt         ###   ########.fr        #
+#    Updated: 2023/10/26 20:57:43 by ddelhalt         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -24,7 +24,9 @@ INCS_DIR    = inc/
 # Source files
 SRCS_FILES    = main.cpp\
 				Server.cpp\
-				ServerLocation.cpp
+				ServerLocation.cpp\
+				load_config.cpp\
+				type_verif.cpp
 
 OBJS_FILES    = $(SRCS_FILES:.cpp=.o)
 

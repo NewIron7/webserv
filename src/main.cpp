@@ -1,6 +1,8 @@
 #include <iostream>
 #include "Server.hpp"
 
+void	load_config(const char *);
+
 static ServerLocation	init_location1(void)
 {
 	ServerLocation	ret;
@@ -88,10 +90,15 @@ static void	print_server(const Server& server)
 	}
 }
 
-int	main(void)
+int	main(int argc, char *argv[])
 {
 	Server	test;
 
-	init_server(test);
-	print_server(test);
+	if (argc == 1)
+	{
+		init_server(test);
+		print_server(test);
+	}
+	else
+		load_config(argv[1]);
 }
