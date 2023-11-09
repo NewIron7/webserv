@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/18 16:44:05 by hboissel          #+#    #+#             */
-/*   Updated: 2023/09/29 16:17:11 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/09 13:25:37 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "webserv.hpp"
@@ -23,15 +23,29 @@ static void	init_signal(void)
 		throw InternalError();
 }
 
-int	main(void)
+int	main(int argc, char **argv)
 {
+	if (argc != 2)
+	{
+		std::cout << "Usage ./webserv [configFile]" << std::endl;
+		return (0);
+	}
+	
+
 	try
 	{
+
+		std::string filename(argv[1]);
+		ConfigurationManager config(filename);
+
+		config.printConfigData();
+		std::cout << std::endl;
+
 		init_signal();
 
 		TcpServer test;
 		test.create(4245);
-		test.run();
+		//test.run();
 	}
 	catch(const std::exception& e)
 	{

@@ -6,7 +6,7 @@
 #    By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/10 16:09:31 by hboissel          #+#    #+#              #
-#    Updated: 2023/10/13 09:43:39 by hboissel         ###   ########.fr        #
+#    Updated: 2023/11/09 14:31:51 by hboissel         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -24,7 +24,8 @@ INCS_DIR    = inc/
 
 # Source files
 SRCS_FILES    = main.cpp TcpServer.cpp Sockets.cpp InternalError.cpp DefaultErrorPages.cpp\
-				Request.cpp Sockets_process.cpp CGIprocess.cpp
+				Request.cpp Sockets_process.cpp CGIprocess.cpp ConfigurationManager.cpp\
+				JsonValue.cpp
 OBJS_FILES    = $(SRCS_FILES:.cpp=.o)
 DEPS_FILES    = $(SRCS_FILES:.cpp=.d)
 
