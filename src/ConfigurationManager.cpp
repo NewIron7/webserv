@@ -159,6 +159,8 @@ void ConfigurationManager::parseJsonObject(const std::string& content, size_t& p
         // Parse value
         JsonValue value;
         parseJsonValue(content, pos, value);
+        if (content.size() <= pos)
+            break ;
 
         // Add key-value pair to the object
         object[key] = value;
@@ -169,9 +171,7 @@ void ConfigurationManager::parseJsonObject(const std::string& content, size_t& p
             pos++;  // Move past the comma
         }
     }
-    std::cout << pos << "*********"<< content.size() << std::endl;
     if (content.size() <= pos) {
-        std::cout << "********" << std::endl;
         throw ConfigurationManager::ErrorJsonObject();
     }
         
