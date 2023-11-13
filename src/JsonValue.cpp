@@ -111,3 +111,9 @@ void JsonValue::printIndentation(int indentation) {
 		std::cout << "  ";  // Use two spaces for each level of indentation
 	}
 }
+
+bool JsonValue::isObject(void) const {
+	if (this->type_ == OBJECT)
+		return (true);
+	return (false);
+}

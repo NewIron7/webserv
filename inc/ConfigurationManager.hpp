@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/09 13:19:55 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/09 14:08:32 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/13 10:51:04 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,7 @@ class ConfigurationManager {
 			size_t& pos, std::map<std::string, JsonValue>& object);
 		void parseJsonArray(const std::string& content,
 			size_t& pos, std::vector<JsonValue>& array);
+		void checkJson(void);
 
 		class ErrorJsonColon : public std::exception
 		{
@@ -61,6 +62,12 @@ class ConfigurationManager {
 		};
 
 		class ErrorJsonObject : public std::exception
+		{
+				public:
+							virtual const char* what() const throw();
+		};
+
+		class ErrorUserConfig : public std::exception
 		{
 				public:
 							virtual const char* what() const throw();

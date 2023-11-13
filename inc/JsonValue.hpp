@@ -37,6 +37,8 @@ class JsonValue {
 
         void printJsonValue(int indentation = 0);
 
+		bool isObject(void) const;
+
 	private:
 		Type type_;
 		std::string value_;

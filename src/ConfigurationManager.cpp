@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/09 13:19:39 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/09 14:08:24 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/13 11:10:42 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@ ConfigurationManager::ConfigurationManager(const std::string &filename) {
 		// Handle error, maybe throw an exception or set default values
 		std::cerr << "Error with configuration file: " << filename << std::endl;
 	}
+	this->checkJson();
 }
 
 void ConfigurationManager::printConfigData() {
@@ -200,6 +201,13 @@ void ConfigurationManager::parseJsonArray(const std::string& content, size_t& po
     pos++;  // Skip the closing bracket ']'
 }
 
+void	ConfigurationManager::checkJson(void)
+{
+	if (this->configData.isObject() == false)
+        throw ConfigurationManager::ErrorUserConfig();
+
+}
+
 const char* ConfigurationManager::ErrorJsonColon::what() const throw()
 {
 	return ("Json error: colon expected");
@@ -214,3 +222,10 @@ const char* ConfigurationManager::ErrorJsonObject::what() const throw()
 {
 	return ("Json error: Unterminated object");
 }
+
+const char* ConfigurationManager::ErrorUserConfig::what() const throw()
+{
+	return ("Config file error");
+}
+
+
