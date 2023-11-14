@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/09 14:31:23 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/09 14:31:24 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/14 06:53:45 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,8 @@ class JsonValue {
         void printJsonValue(int indentation = 0);
 
 		bool isObject(void) const;
+		bool isString(void) const;
+		bool isArray(void) const;
 
 	private:
 		Type type_;

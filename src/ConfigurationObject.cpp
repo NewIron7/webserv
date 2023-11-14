@@ -6,12 +6,12 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/13 11:50:53 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/13 11:51:57 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/14 06:45:35 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "ConfigurationObject.hpp"
 
-ConfigurationObject::ConfigurationObject(void)
+ConfigurationObject::ConfigurationObject(void): isBodySize(false)
 {
 	return ;
 }
@@ -20,3 +20,32 @@ ConfigurationObject::~ConfigurationObject(void)
 {
 	return ;
 }
+
+void ConfigurationObject::printParameters() const {
+	std::cout << "Host: " << host << std::endl;
+	std::cout << "Port: " << port << std::endl;
+
+	std::cout << "Server Names: ";
+	for (size_t i = 0; i < server_names.size(); ++i) {
+		std::cout << server_names[i] << " ";
+	}
+	std::cout << std::endl;
+
+	std::cout << "Default Error Pages: ";
+	for (std::map<unsigned int, std::string>::const_iterator it = defaultErrorPages.begin();
+			it != defaultErrorPages.end(); ++it) {
+		std::cout << "{" << it->first << ": " << it->second << "} ";
+	}
+	std::cout << std::endl;
+
+	if (this->isBodySize)
+		std::cout << "Body Size: " << bodySize << std::endl;
+
+	// Printing routes might need a custom implementation of Route's print method
+	std::cout << "Routes: " << std::endl;
+	for (std::map<std::string, Route>::const_iterator it = routes.begin(); it != routes.end(); ++it) {
+		std::cout << "Route: " << it->first << std::endl;
+		//it->second.print(); // Assuming Route has a print method
+	}
+}
+

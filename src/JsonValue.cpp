@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/09 14:31:28 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/09 14:50:05 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/14 06:54:13 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ JsonValue::JsonValue() : type_(STRING) {}
 
 std::map<std::string, JsonValue> JsonValue::getObject() const {
 	if (type_ == OBJECT) {
-		return object_;
+		return this->object_;
 	} else {
 		// Handle error or return an empty map
 		std::cerr << "Error: Not an object." << std::endl;
@@ -82,7 +82,8 @@ void JsonValue::printJsonValueHelper(const JsonValue& value, int indentation) {
 void JsonValue::printJsonObject(const std::map<std::string, JsonValue>& object, int indentation) {
 	std::cout << "{" << std::endl;
 
-	for (std::map<std::string, JsonValue>::const_iterator it = object.begin(); it != object.end(); ++it) {
+	for (std::map<std::string, JsonValue>::const_iterator it = object.begin(); it != object.end(); ++it) 
+	{
 		printIndentation(indentation + 1);
         std::cout << "\"" << it->first << "\": ";
         printJsonValueHelper(it->second, indentation + 1);
@@ -114,6 +115,18 @@ void JsonValue::printIndentation(int indentation) {
 
 bool JsonValue::isObject(void) const {
 	if (this->type_ == OBJECT)
+		return (true);
+	return (false);
+}
+
+bool JsonValue::isString(void) const {
+	if (this->type_ == STRING)
+		return (true);
+	return (false);
+}
+
+bool JsonValue::isArray(void) const {
+	if (this->type_ == ARRAY)
 		return (true);
 	return (false);
 }

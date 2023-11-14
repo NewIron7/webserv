@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/09 13:19:55 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/13 10:51:04 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/14 06:57:09 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,11 @@
 # include <sstream>
 # include <map>
 # include <algorithm>
+# include <vector>
 
 # include "JsonValue.hpp"
+# include "ConfigurationObject.hpp"
+
 
 class ConfigurationManager {
 	public:
@@ -31,8 +34,7 @@ class ConfigurationManager {
 
 		bool parseConfig(const std::string &content, JsonValue& jsonValue);
 
-		// Add your parsing logic here
-
+		std::map<std::string, std::vector<ConfigurationObject> >	config;	
 
 	private:
 		JsonValue configData;  // Adjust the data structure based on your needs
@@ -48,6 +50,12 @@ class ConfigurationManager {
 		void parseJsonArray(const std::string& content,
 			size_t& pos, std::vector<JsonValue>& array);
 		void checkJson(void);
+
+		void _checkEachServerJson(std::map<std::string, JsonValue> &serversMap);
+		void _checkServerJson(std::map<std::string, JsonValue> serverContentMap);
+		void _checkGetContentServer(std::map<std::string, JsonValue>::const_iterator &it,
+				ConfigurationObject &configTmp);
+		std::vector<std::string>	_getContentStringArrayJson(JsonValue &json);
 
 		class ErrorJsonColon : public std::exception
 		{
