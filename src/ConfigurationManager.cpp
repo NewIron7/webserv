@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/09 13:19:39 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/14 07:02:19 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/14 11:35:34 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,23 @@ ConfigurationManager::ConfigurationManager(const std::string &filename) {
 	}
 	this->checkJson();
 }
+
+void ConfigurationManager::printConfig(void) {
+
+	for (std::map<std::string, std::vector<ConfigurationObject> >::const_iterator it = this->config.begin(); it != this->config.end(); ++it) {
+		std::cout << "	Key: " << it->first << std::endl;
+
+		const std::vector<ConfigurationObject>& vec = it->second;
+		for (size_t i = 0; i < vec.size(); ++i) {
+			std::cout << "	ConfigurationObject " << i + 1 << ":" << std::endl;
+			vec[i].printParameters(); // Utilize the printParameters method
+			std::cout << std::endl;
+		}
+
+		std::cout << std::endl;
+	}
+}
+
 
 void ConfigurationManager::printConfigData() {
 	this->configData.printJsonValue();
@@ -58,9 +75,9 @@ bool ConfigurationManager::parseConfig(const std::string &content, JsonValue& js
 	//std::cout << "Before parsing: " << cleanContent << std::endl;
 
 	this->parseJsonValue(cleanContent, pos, jsonValue);
-	std::cout << "Parsing json done: " << std::endl;
-	this->printConfigData();
-	std::cout << std::endl;
+	//std::cout << "Parsing json done: " << std::endl;
+	//this->printConfigData();
+	//std::cout << std::endl;
 
 	return (true);
 }
@@ -222,7 +239,82 @@ static int stringToInt(const std::string& str) {
 	return result;
 }
 
-std::vector<std::string>	ConfigurationManager::_getContentStringArrayJson(JsonValue &json)
+static std::string intToString(unsigned int number) {
+	std::stringstream ss;
+	ss << number;
+	return ss.str();
+}
+
+void	ConfigurationManager::_getContentRoute(Route &routeRef,
+			std::map<std::string, JsonValue>::const_iterator &it)
+{
+	if (it->second.isString() == true)
+	{
+		if (it->first == "redirection")
+		{
+			routeRef.redirection = it->second.getString();
+		}
+		else if (it->first == "location")
+		{
+			routeRef.location = it->second.getString();
+		}
+		else if (it->first == "directoryListing")
+		{
+			if (it->second.getString() != "true" || it->second.getString() != "false")
+				throw ConfigurationManager::ErrorUserConfig();
+			else if (it->second.getString() == "true")
+				routeRef.directoryListing = true;
+		}
+		else if (it->first == "root")
+		{
+			routeRef.root = it->second.getString();
+		}
+		else if (it->first == "cgiPath")
+		{
+			routeRef.cgiPath = it->second.getString();
+		}
+		else if (it->first == "cgiExtension")
+		{
+			routeRef.cgiExtension = it->second.getString();
+		}
+		else if (it->first == "uploadPath")
+		{
+			routeRef.uploadedFile = true;
+			routeRef.uploadPath = it->second.getString();
+		}
+		else
+			throw ConfigurationManager::ErrorUserConfig();
+	}
+	else if (it->second.isArray() == true)
+	{
+		if (it->first == "methods")
+		{
+			routeRef.methods = this->_getContentStringArrayJson(it->second);
+		}
+		else
+			throw ConfigurationManager::ErrorUserConfig();
+	}
+	else
+		throw ConfigurationManager::ErrorUserConfig();
+}
+
+void	ConfigurationManager::_getRoute(std::map<std::string, JsonValue>::const_iterator &it,
+		ConfigurationObject &configTmp)
+{
+	Route &routeRef = configTmp.routes[it->first];
+	std::map<std::string, JsonValue>	mapJson = it->second.getObject();
+	
+	for (std::map<std::string, JsonValue>::const_iterator it = mapJson.begin();
+			it != mapJson.end(); ++it)
+	{
+		this->_getContentRoute(routeRef, it);
+	}
+	if (routeRef.cgiPath.empty() != routeRef.cgiExtension.empty())
+		throw ConfigurationManager::ErrorUserConfig();
+		
+}
+
+std::vector<std::string>	ConfigurationManager::_getContentStringArrayJson(const JsonValue &json)
 {
 	std::vector<JsonValue>	arrayJson = json.getArray();
 	std::vector<std::string>	arrayTmp;
@@ -234,12 +326,32 @@ std::vector<std::string>	ConfigurationManager::_getContentStringArrayJson(JsonVa
 			throw ConfigurationManager::ErrorUserConfig();
 		arrayTmp.push_back(it->getString());
 	}
+	return (arrayTmp);
+}
+
+std::map<unsigned int, std::string>	ConfigurationManager::_getContentStringObjectJson(
+		const JsonValue	&json)
+{
+	std::map<std::string, JsonValue>	mapJson = json.getObject();
+	std::map<unsigned int, std::string>	mapTmp;
+
+	for (std::map<std::string, JsonValue>::const_iterator it = mapJson.begin();
+			it != mapJson.end(); ++it)
+	{
+		if (isStringOnlyDigits(it->first) == false || it->second.isString() == false)
+		{
+			std::cerr << "You have to set cgiPath and cgiExtension" << std::endl;
+			throw ConfigurationManager::ErrorUserConfig();
+		}
+		mapTmp[stringToInt(it->first)] = it->second.getString();
+	}
+	return (mapTmp);
 }
 
 void	ConfigurationManager::_checkGetContentServer(
 		std::map<std::string, JsonValue>::const_iterator &it, ConfigurationObject &configTmp)
 {
-	std::cout << "	" << it->first << std::endl;
+	//std::cout << "	" << it->first << std::endl;
 	if (it->first == "host")
 	{
 		if (it->second.isString() == false)
@@ -259,9 +371,33 @@ void	ConfigurationManager::_checkGetContentServer(
 	{
 		if (it->second.isArray() == false)
 			throw ConfigurationManager::ErrorUserConfig();
-		//use getcontentStringArrayJson method to get hold of vector of string
+		configTmp.server_names = this->_getContentStringArrayJson(it->second);
+	}
+	else if (it->first == "defaultErrorPages")
+	{
+		if (it->second.isObject() == false)
+			throw ConfigurationManager::ErrorUserConfig();
+		configTmp.defaultErrorPages = this->_getContentStringObjectJson(it->second);
+	}
+	else if (it->first == "bodySize")
+	{
+		if (it->second.isString() == false || isStringOnlyDigits(it->second.getString()) == false)
+			throw ConfigurationManager::ErrorUserConfig();
+		configTmp.isBodySize = true;
+		configTmp.bodySize = stringToInt(it->second.getString());
+	}
+	else if (it->second.isObject() == true)
+	{
+		//std::cout << "[new route]" << std::endl;
+		this->_getRoute(it, configTmp);
+	}
+	else
+	{
+		std::cerr << "Error bad key" << std::endl;
+		throw ConfigurationManager::ErrorUserConfig();
 	}
 }
+
 
 void	ConfigurationManager::_checkServerJson(std::map<std::string, JsonValue> serverContentMap)
 {
@@ -275,8 +411,10 @@ void	ConfigurationManager::_checkServerJson(std::map<std::string, JsonValue> ser
 	{
 		this->_checkGetContentServer(it, configTmp);
 	}
-	std::cout << "$Result: " << std::endl;
-	configTmp.printParameters();
+
+	std::string key = configTmp.host + ":";
+	key += intToString(configTmp.port);
+	this->config[key].push_back(configTmp);
 }
 
 void	ConfigurationManager::_checkEachServerJson(std::map<std::string, JsonValue> &serversMap)
@@ -284,14 +422,15 @@ void	ConfigurationManager::_checkEachServerJson(std::map<std::string, JsonValue>
 	for (std::map<std::string, JsonValue>::const_iterator it = serversMap.begin();
 			it != serversMap.end(); ++it)
 	{
-		std::cout << "-> Checking server: " << it->first << std::endl;
+		//std::cout << "-> Checking server: " << it->first << std::endl;
 		this->_checkServerJson(it->second.getObject());
 	}
+	this->printConfig();
 }
 
 void	ConfigurationManager::checkJson(void)
 {
-	std::cout << "[] check Json" << std::endl;
+	//std::cout << "[] check Json" << std::endl;
 	if (this->configData.isObject() == false)
 		throw ConfigurationManager::ErrorUserConfig();
 	std::map<std::string, JsonValue>	serversMap = this->configData.getObject();

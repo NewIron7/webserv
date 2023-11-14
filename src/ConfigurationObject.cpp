@@ -44,8 +44,8 @@ void ConfigurationObject::printParameters() const {
 	// Printing routes might need a custom implementation of Route's print method
 	std::cout << "Routes: " << std::endl;
 	for (std::map<std::string, Route>::const_iterator it = routes.begin(); it != routes.end(); ++it) {
-		std::cout << "Route: " << it->first << std::endl;
-		//it->second.print(); // Assuming Route has a print method
+		std::cout << "=> Route " << it->first << " <=" << std::endl;
+		it->second.printRoute(); // Assuming Route has a print method
 	}
 }
 

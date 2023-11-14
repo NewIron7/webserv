@@ -20,3 +20,20 @@ Route::~Route(void)
 {
 	return ;
 }
+
+void Route::printRoute() const {
+        std::cout << "Methods: ";
+        for (size_t i = 0; i < methods.size(); ++i) {
+            std::cout << methods[i] << " ";
+        }
+        std::cout << std::endl;
+
+        std::cout << "Redirection: " << redirection << std::endl;
+        std::cout << "Location: " << location << std::endl;
+        std::cout << "Directory Listing: " << (directoryListing ? "true" : "false") << std::endl;
+        std::cout << "Root: " << root << std::endl;
+        std::cout << "CGI Path: " << cgiPath << std::endl;
+        std::cout << "CGI Extension: " << cgiExtension << std::endl;
+        std::cout << "Uploaded File: " << (uploadedFile ? "true" : "false") << std::endl;
+        std::cout << "Upload Path: " << uploadPath << std::endl;
+    }

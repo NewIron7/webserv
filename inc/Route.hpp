@@ -14,12 +14,15 @@
 
 # include <string>
 # include <vector>
+# include <iostream>
 
 class Route
 {
 	public:
 		Route(void);
 		~Route(void);
+
+		void printRoute() const;
 
 		std::vector<std::string>	methods;
 		std::string					redirection;

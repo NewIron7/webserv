@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/09 13:19:55 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/14 06:57:09 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/14 11:03:18 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,8 @@ class ConfigurationManager {
 		ConfigurationManager(const std::string& filename); 
 
 		void printConfigData(void);
+
+		void printConfig(void);
 
 		bool loadConfigFile(const std::string& filename);
 
@@ -55,7 +57,12 @@ class ConfigurationManager {
 		void _checkServerJson(std::map<std::string, JsonValue> serverContentMap);
 		void _checkGetContentServer(std::map<std::string, JsonValue>::const_iterator &it,
 				ConfigurationObject &configTmp);
-		std::vector<std::string>	_getContentStringArrayJson(JsonValue &json);
+		std::vector<std::string>	_getContentStringArrayJson(const JsonValue &json);
+		std::map<unsigned int, std::string>	_getContentStringObjectJson(const JsonValue &json);
+		void	_getRoute(std::map<std::string, JsonValue>::const_iterator &it,
+				ConfigurationObject &configTmp);
+		void	_getContentRoute(Route &routeRef, std::map<std::string, JsonValue>::const_iterator &it);
+	
 
 		class ErrorJsonColon : public std::exception
 		{
