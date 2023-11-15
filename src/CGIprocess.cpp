@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 18:01:04 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/24 16:25:28 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/15 07:58:36 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "CGIprocess.hpp"
@@ -26,7 +26,7 @@ size_t	CGIprocess::_getBodyLength(void)
 		res.erase(0, tmp.size() + 2);
 		tmp = res.substr(0, res.find("\r\n"));
 	}
-	std::cout << "body:" << res << std::endl;
+	//std::cout << "body:" << res << std::endl;
 	return (res.size() - 2);
 }
 
@@ -288,8 +288,8 @@ void	CGIprocess::runCGI(Request &req)
 			this->step = 1;
 		else
 			this->step = 0;
-		std::cout << "STEP= " << this->step << std::endl;
-		std::cout << "[CGI] CGI launched !" << std::endl;
+		//std::cout << "STEP= " << this->step << std::endl;
+		//std::cout << "[CGI] CGI launched !" << std::endl;
 	}
 }
 

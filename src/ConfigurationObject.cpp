@@ -49,3 +49,16 @@ void ConfigurationObject::printParameters() const {
 	}
 }
 
+ConfigurationObject& ConfigurationObject::operator=(const ConfigurationObject& other) {
+        if (this != &other) { // Self-assignment check
+            this->host = other.host;
+            this->port = other.port;
+            this->server_names = other.server_names;
+            this->defaultErrorPages = other.defaultErrorPages;
+            this->isBodySize = other.isBodySize;
+            this->bodySize = other.bodySize;
+            this->routes = other.routes;
+        }
+        return *this;
+    }
+

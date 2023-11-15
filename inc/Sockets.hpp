@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/23 12:04:20 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/13 07:37:08 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/15 10:32:59 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef SOCKETS_HPP
@@ -24,6 +24,7 @@
 # include "InternalError.hpp"
 # include "DefaultErrorPages.hpp"
 # include "CGIprocess.hpp"
+# include "ConfigurationObject.hpp"
 
 class Sockets
 {
@@ -34,7 +35,8 @@ class Sockets
 		Sockets	&operator=(Sockets const &src);
 
 
-		void	setup(int sock, int sfd, int sp, bool m = false);
+		void	setup(int sock, int sfd, int sp, bool m, std::string host,
+				const std::vector<ConfigurationObject> &config);
 		void	changeEvents(uint32_t ev, int epfd);
 
 		void	printAttributes(void);
@@ -46,6 +48,7 @@ class Sockets
 		int					socket;
 		struct sockaddr_in	info;
 		socklen_t			size;
+		std::string			host;
 		unsigned int		port;
 		struct epoll_event	event;
 		std::string			request;
@@ -57,15 +60,24 @@ class Sockets
 
 		bool				CGIrun;
 		CGIprocess			cgi;
+		std::vector<ConfigurationObject>	config;
 	private:
-		void	_processMethod(void);
-		void	_processGET(void);
-		void	_processPOST(void);
-		void	_processDELETE(void);
+
+		void	_processMethod(const ConfigurationObject &currentConfig);
+		void	_processGET(const ConfigurationObject &currentConfig);
+		void	_processPOST(const ConfigurationObject &currentConfig);
+		void	_processDELETE(const ConfigurationObject &currentConfig);
 		void	_checkBodyEmpty(void);
+		void	_checkBodySize(const ConfigurationObject &currentConfig);
 
 		bool	_isCGI(void);
 		void	_processCGI(void);
+
+		const ConfigurationObject	&_getCurrentConfig(void);
+		void						_checkMethodAuthorized(const Route &target,
+				const std::string m);
+		Route					_getRealTarget(Request &req,
+				const ConfigurationObject &currentConfig);
 
 		class Error : public std::exception
 		{

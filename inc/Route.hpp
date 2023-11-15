@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/13 11:38:33 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/14 05:32:21 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/15 09:11:24 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef ROUTE_HPP
@@ -23,6 +23,7 @@ class Route
 		~Route(void);
 
 		void printRoute() const;
+		Route& operator=(const Route& other);
 
 		std::vector<std::string>	methods;
 		std::string					redirection;
@@ -34,6 +35,7 @@ class Route
 		bool						uploadedFile;
 		std::string					uploadPath;
 
+		bool						empty;
 	private:
 };
 

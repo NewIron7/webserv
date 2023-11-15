@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/08 12:39:57 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/16 10:50:36 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/15 10:40:42 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Sockets.hpp"
@@ -21,42 +21,118 @@ void	Sockets::_checkBodyEmpty(void)
 	}
 }
 
-void	Sockets::_processGET(void)
+void	Sockets::_checkBodySize(const ConfigurationObject &currentConfig)
 {
 	Request	&req = this->oRequest;
+
+	if (currentConfig.isBodySize && currentConfig.bodySize < req.getBody().size())
+	{
+		req.setErrorCode(400);
+		throw Sockets::Error();
+	}
+}
+
+Route	Sockets::_getRealTarget(Request &req, const ConfigurationObject &currentConfig)
+{
+	const std::string &targetTmp = req.getTarget();
+	Route realTarget;
+	std::size_t	sizeRoute = 0;
+
+	//currentConfig.printParameters();
+
+	realTarget.location = "." + targetTmp;
+	realTarget.directoryListing = true;
+	realTarget.empty = true;
+
+	for (std::map<std::string, Route>::const_iterator it = currentConfig.routes.begin();
+			it != currentConfig.routes.end(); ++it)
+	{
+		std::size_t found = targetTmp.find(it->first);
+		if (found != std::string::npos && found == 0 && it->first.size() > sizeRoute)
+		{
+			realTarget = it->second;
+			sizeRoute = it->first.size();
+		}
+	}
+	if (sizeRoute)
+	{
+		std::string dirListAdd = targetTmp.substr(sizeRoute);
+		if (dirListAdd.size() && realTarget.directoryListing == false)
+		{
+			req.setErrorCode(404);
+			throw Sockets::Error();
+		}
+		else
+			realTarget.location += targetTmp.substr(sizeRoute);
+	}
+	return (realTarget);
+}
+
+void	Sockets::_checkMethodAuthorized(const Route &target, const std::string m)
+{
+	if (std::find(target.methods.begin(), target.methods.end(), m) == target.methods.end())
+	{
+		if (target.empty == false)
+		{
+			this->oRequest.setErrorCode(405);
+			throw Sockets::Error();
+		}
+	}
+}
+
+void	Sockets::_processGET(const ConfigurationObject &currentConfig)
+{
+	Request	&req = this->oRequest;
+	Route	target = this->_getRealTarget(req, currentConfig);
 	
+	//std::cout << "Current route: " << std::endl;
+	//target.printRoute();
+
+	this->_checkMethodAuthorized(target, "GET");
 	this->_checkBodyEmpty();
+
+	this->response = DefaultErrorPages::generate( 418, "Test GET");
 	(void)req;
 }
 
-void	Sockets::_processPOST(void)
+void	Sockets::_processPOST(const ConfigurationObject &currentConfig)
 {
 	Request	&req = this->oRequest;
-	(void)req;
-}
-
-void	Sockets::_processDELETE(void)
-{
-	Request	&req = this->oRequest;
+	Route	target = this->_getRealTarget(req, currentConfig);
 	
+	this->_checkMethodAuthorized(target, "POST");
+	this->_checkBodySize(currentConfig);
+		
+	this->response = DefaultErrorPages::generate( 418, "Test POST");
+	(void)req;
+}
+
+void	Sockets::_processDELETE(const ConfigurationObject &currentConfig)
+{
+	Request	&req = this->oRequest;
+	Route	target = this->_getRealTarget(req, currentConfig);
+	
+	this->_checkMethodAuthorized(target, "DELETE");
 	this->_checkBodyEmpty();
+	
+	this->response = DefaultErrorPages::generate( 418, "Test DELETE");
 	(void)req;
 }
 
 
-void	Sockets::_processMethod(void)
+void	Sockets::_processMethod(const ConfigurationObject &currentConfig)
 {
 	if (this->oRequest.getMethod() == "GET")
-		this->_processGET();
+		this->_processGET(currentConfig);
 	else if (this->oRequest.getMethod() == "POST")
-		this->_processPOST();
+		this->_processPOST(currentConfig);
 	else
-		this->_processDELETE();
+		this->_processDELETE(currentConfig);
 }
 
 bool	Sockets::_isCGI(void)
 {
-	return (true);
+	return (false);
 }
 
 void	Sockets::_processCGI(void)
@@ -67,6 +143,19 @@ void	Sockets::_processCGI(void)
 	this->CGIrun = true;
 }
 
+const ConfigurationObject &Sockets::_getCurrentConfig(void)
+{
+	const std::string &server_name = this->oRequest.getHost();
+	for (std::vector<ConfigurationObject>::const_iterator it = this->config.begin();
+			it != this->config.end(); ++it)
+	{
+		if (std::find(it->server_names.begin(), it->server_names.end(),
+					server_name) != it->server_names.end())
+			return (*it);
+	}
+	return (*this->config.begin());
+}
+
 void	Sockets::process(void)
 {
 	this->oRequest = Request(this->request);
@@ -74,13 +163,17 @@ void	Sockets::process(void)
 		this->response = DefaultErrorPages::generate(
 			this->oRequest.getErrorCode(), "Error while parsing the request");
 	//this->oRequest.printAttributes();
+	
+	const ConfigurationObject &currentConfig = this->_getCurrentConfig();
+	//std::cout << "***Config found: " << std::endl;
+	//currentConfig.printParameters();
 	try
 	{
 		//before check if its a CGI call
 		if (this->_isCGI())
 			this->_processCGI();
 		else
-			this->_processMethod();
+			this->_processMethod(currentConfig);
 	}
 	catch(const std::exception& e)
 	{

@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 14:27:01 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/16 10:11:49 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/15 07:44:15 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef TCPSERVER_HPP
@@ -33,6 +33,7 @@
 # include "DefaultErrorPages.hpp"
 # include "Request.hpp"
 # include "CGIprocess.hpp"
+# include "ConfigurationManager.hpp"
 
 #include <sstream>
 
@@ -42,11 +43,11 @@
 class TcpServer
 {
 	public:
-		TcpServer(void);
+		TcpServer(const ConfigurationManager &config);
 		~TcpServer(void);
 
 		void	run(void);
-		void	create(unsigned int port);
+		void	create(void);
 	private:
 		void	_add_client(const int &fdServer);
 		void	_remove_client(Sockets &client);
@@ -64,9 +65,14 @@ class TcpServer
 
 		void	_printCGIstreams(void);
 
+		void	_createServer(std::string host, unsigned int port,
+				const std::vector<ConfigurationObject> &config);
+
 		int									_epfd;
 		std::map<int, Sockets>				_streams;
 		std::map<int, Sockets *>			_CGIstreams;
+
+		const ConfigurationManager	&config;
 };
 
 #endif

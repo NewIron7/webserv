@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/18 16:44:05 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/14 06:30:14 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/15 07:21:03 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "webserv.hpp"
@@ -39,9 +39,9 @@ int	main(int argc, char **argv)
 
 		init_signal();
 
-		TcpServer test;
-		test.create(4245);
-		//test.run();
+		TcpServer test(config);
+		test.create();
+		test.run();
 	}
 	catch(const std::exception& e)
 	{

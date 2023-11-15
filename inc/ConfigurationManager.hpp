@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/09 13:19:55 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/14 11:03:18 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/15 06:07:21 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,11 +30,13 @@ class ConfigurationManager {
 
 		void printConfigData(void);
 
-		void printConfig(void);
+		void printConfig(void) const;
 
 		bool loadConfigFile(const std::string& filename);
 
 		bool parseConfig(const std::string &content, JsonValue& jsonValue);
+
+		std::vector<ConfigurationObject>	&getServersHostPort(std::string &host, unsigned int port);
 
 		std::map<std::string, std::vector<ConfigurationObject> >	config;	
 

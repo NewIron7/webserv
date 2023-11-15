@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/13 11:21:04 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/14 06:44:34 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/15 06:57:36 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef CONFIGURATIONOBJECT_HPP
@@ -24,6 +24,8 @@ class ConfigurationObject
 	public:
 		ConfigurationObject(void);
 		~ConfigurationObject(void);
+
+		ConfigurationObject& operator=(const ConfigurationObject& other);
 
 		std::string							host;
 		unsigned int						port;

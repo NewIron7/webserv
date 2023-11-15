@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/23 12:19:06 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/13 07:37:28 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/15 07:45:02 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Sockets.hpp"
@@ -43,7 +43,7 @@ void Sockets::printAttributes() {
 }
 
 Sockets::Sockets(void):
-	main(false), server(-1), socket(-1), port(-1), reqGot(false), resGen(false)
+	main(false), server(-1), socket(-1), host("0.0.0.0"), port(-1), reqGot(false), resGen(false)
 	,resSent(false), CGIrun(false)
 {
 	this->size = sizeof(this->info);
@@ -84,18 +84,21 @@ Sockets	&Sockets::operator=(Sockets const &rhs)
 	return (*this);
 }
 
-void	Sockets::setup(int sock, int sfd, int sp, bool m)
+void	Sockets::setup(int sock, int sfd, int sp, bool m, std::string host,
+		const std::vector<ConfigurationObject> &config)
 {
 	this->socket = sock;
 	this->event.data.fd = sock;
 	this->main = m;
 	this->server = sfd;
 	this->port = sp;
-	
+	this->host = host;
+	this->config = config;
+
 	if (this->main)
 	{
 		this->info.sin_family = AF_INET;
-		this->info.sin_addr.s_addr = htonl(INADDR_ANY);
+		this->info.sin_addr.s_addr = inet_addr(this->host.c_str());
 		this->info.sin_port = htons(port);
 	}
 

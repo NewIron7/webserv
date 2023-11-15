@@ -6,12 +6,12 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 14:50:50 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/24 16:15:30 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/15 07:47:09 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "TcpServer.hpp"
 
-TcpServer::TcpServer(void)
+TcpServer::TcpServer(const ConfigurationManager &config): config(config)
 {
 	this->_epfd = epoll_create1(EPOLL_CLOEXEC);
 	if (this->_epfd == -1)
@@ -76,7 +76,7 @@ void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
 	{
 		return ;
 	}
-	
+
 	if (client.resGen == false)
 	{
 		std::cout << "\033[33m[+] Generating response\033[0m" << std::endl;
@@ -201,7 +201,7 @@ void	TcpServer::_processEPOLLHUP(struct epoll_event &ev)
 		Sockets *client = this->_CGIstreams[ev.data.fd];
 		CGIprocess &cgi = client->cgi;
 
-		cgi.printAllAttributes();
+		//cgi.printAllAttributes();
 
 		if (cgi.isError())
 		{
@@ -270,17 +270,17 @@ void	TcpServer::_checkInactiveCGI(struct epoll_event *evlist, int evNb)
 				cgi.done = true;
 				cgi.addHeaders();
 				client->response = cgi.response;
-				
+
 				this->_remove_cgi(*client, 0);
 				this->_remove_cgi(*client, 1);
-				
+
 				cgi.endCGI(false);
 				client->CGIrun = false;
 				client->resGen = true;
 
 				std::cout << "\033[35m[] Response ->\033[0m" << std::endl;
 				std::cout << "\033[2m" << client->response << "\033[0m" << std::endl;
-			
+
 				break ;
 			}
 		}
@@ -315,6 +315,7 @@ void	TcpServer::_add_client(const int &fdServer)
 	struct sockaddr_in info;
 	socklen_t	size = sizeof(info);
 	memset((void*)&info, 0, size);
+	const Sockets &server = this->_streams[fdServer];
 
 	int	clientFd = accept(fdServer, (struct sockaddr *)&info, &size);
 	if (clientFd == -1)
@@ -327,7 +328,7 @@ void	TcpServer::_add_client(const int &fdServer)
 	this->_streams[clientFd].info = info;
 
 	Sockets &client = this->_streams[clientFd];
-	client.setup(clientFd, fdServer, -1, false);
+	client.setup(clientFd, fdServer, server.port, false, server.host, server.config);
 
 	if (epoll_ctl(this->_epfd, EPOLL_CTL_ADD, client.socket,
 				&client.event) == -1)
@@ -361,23 +362,23 @@ void	TcpServer::_add_cgi(Sockets &client, unsigned int nb)
 		throw InternalError();
 
 	//cgi.printAllAttributes();
-	
+
 	std::cout << "cgi.step " << cgi.step << std::endl;
 }
 
 void	TcpServer::_remove_cgi(Sockets &client, unsigned int nb)
 {
 	CGIprocess	&cgi = client.cgi;
-	
+
 	if (this->_CGIstreams.find(cgi.fds[nb]) == this->_CGIstreams.end())
 		return ;
 
 	//this->_printCGIstreams();
 	this->_CGIstreams.erase(cgi.fds[nb]);
 	//this->_printCGIstreams();
-	
+
 	if ((cgi.c == false) && (epoll_ctl(this->_epfd, EPOLL_CTL_DEL, cgi.fds[nb],
-				&cgi.event[nb]) == -1))
+					&cgi.event[nb]) == -1))
 	{
 		std::cout << "Error while removing cgi from epoll" << std::endl;
 		throw InternalError();
@@ -404,10 +405,29 @@ void	TcpServer::_remove_client(Sockets &client)
 		this->_streams.erase(client.socket);
 }
 
-void	TcpServer::create(unsigned int port)
+static void extractHostAndPort(const std::string& text, std::string& host, unsigned int& port) {
+    size_t lastColonPos = text.find_last_of(':');
+
+    if (lastColonPos != std::string::npos && lastColonPos + 1 < text.length()) {
+        host = text.substr(0, lastColonPos);
+        std::string portStr = text.substr(lastColonPos + 1);
+
+		std::stringstream ss(portStr);
+		ss >> port;
+    } else {
+        // Error handling if the format is incorrect
+        // For example, when the ':' character is not found
+        // Handle the error according to your requirements
+        // For instance, you might throw an exception or set default values.
+        std::cerr << "Invalid format: Cannot extract host and port from input text." << std::endl;
+        // Set default values for host and port or handle the error accordingly
+    }
+}
+
+void	TcpServer::_createServer(std::string host, unsigned int port,
+		const std::vector<ConfigurationObject> &config)
 {
-	std::cout << "\033[2m@Server creation\033[0m" << std::endl;
-	int	serverFd = socket(AF_INET, SOCK_STREAM, 0);
+	int	serverFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (serverFd == -1)
 		throw InternalError();
 
@@ -415,7 +435,7 @@ void	TcpServer::create(unsigned int port)
 	if (setsockopt(serverFd, SOL_SOCKET, SO_REUSEADDR, &y, sizeof(int)) == -1)
 		throw InternalError();
 
-	this->_streams[serverFd].setup(serverFd, -1, port, true);
+	this->_streams[serverFd].setup(serverFd, -1, port, true, host, config);
 
 	std::cout << "\033[2m@Server binding\033[0m" << std::endl;
 	Sockets &server = this->_streams[serverFd];
@@ -425,11 +445,31 @@ void	TcpServer::create(unsigned int port)
 	if (listen(server.socket, MAXIREQ) == -1)
 		throw InternalError();
 
-	std::cout << "\033[44m@Server [ " << server.socket << " ] is listenning on port: "
-		<< server.port << "\033[0m" << std::endl;
-
+	std::cout << "\033[44m@Server [ " << server.socket << " ] " << server.host
+		<< ":" << server.port << "\033[0m" << std::endl;
 	if (epoll_ctl(this->_epfd, EPOLL_CTL_ADD, server.socket,
 				&(this->_streams[server.socket].event)) == -1)
 		throw InternalError();
+
+}
+
+void	TcpServer::create(void)
+{
+
+	std::cout << "\033[2m@Got hold of Config\033[0m" << std::endl;
+	this->config.printConfig();
+
+	for (std::map<std::string, std::vector<ConfigurationObject> >::const_iterator
+			it = this->config.config.begin();
+			it != this->config.config.end(); ++it)
+	{
+		std::cout << "\033[2m@Server creation: " << it->first << "\033[0m" << std::endl;
+		std::string host;
+		unsigned int port;
+		extractHostAndPort(it->first, host, port);
+		if (host.empty())
+			throw InternalError();
+		this->_createServer(host, port, it->second);
+	}
 }
 

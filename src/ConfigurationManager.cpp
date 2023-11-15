@@ -6,11 +6,34 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/09 13:19:39 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/14 11:35:34 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/15 10:24:43 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ConfigurationManager.hpp"
+
+static bool isStringOnlyDigits(const std::string& str) {
+	for (size_t i = 0; i < str.length(); ++i) {
+		if (!isdigit(str[i])) {
+			return false;
+		}
+	}
+	return true;
+}
+
+
+static int stringToInt(const std::string& str) {
+	std::stringstream ss(str);
+	unsigned int result;
+	ss >> result;
+	return result;
+}
+
+static std::string intToString(unsigned int number) {
+	std::stringstream ss;
+	ss << number;
+	return ss.str();
+}
 
 ConfigurationManager::ConfigurationManager(const std::string &filename) {
 	if (!loadConfigFile(filename)) {
@@ -18,9 +41,17 @@ ConfigurationManager::ConfigurationManager(const std::string &filename) {
 		std::cerr << "Error with configuration file: " << filename << std::endl;
 	}
 	this->checkJson();
+	//this->printConfig();
 }
 
-void ConfigurationManager::printConfig(void) {
+std::vector<ConfigurationObject>	&ConfigurationManager::getServersHostPort(std::string &host, unsigned int port) 
+{
+	std::string	key = host;
+	key += intToString(port);
+	return (this->config[key]);
+}
+
+void ConfigurationManager::printConfig(void) const {
 
 	for (std::map<std::string, std::vector<ConfigurationObject> >::const_iterator it = this->config.begin(); it != this->config.end(); ++it) {
 		std::cout << "	Key: " << it->first << std::endl;
@@ -221,30 +252,6 @@ void ConfigurationManager::parseJsonArray(const std::string& content, size_t& po
 	pos++;  // Skip the closing bracket ']'
 }
 
-
-static bool isStringOnlyDigits(const std::string& str) {
-	for (size_t i = 0; i < str.length(); ++i) {
-		if (!isdigit(str[i])) {
-			return false;
-		}
-	}
-	return true;
-}
-
-
-static int stringToInt(const std::string& str) {
-	std::stringstream ss(str);
-	unsigned int result;
-	ss >> result;
-	return result;
-}
-
-static std::string intToString(unsigned int number) {
-	std::stringstream ss;
-	ss << number;
-	return ss.str();
-}
-
 void	ConfigurationManager::_getContentRoute(Route &routeRef,
 			std::map<std::string, JsonValue>::const_iterator &it)
 {
@@ -301,6 +308,17 @@ void	ConfigurationManager::_getContentRoute(Route &routeRef,
 void	ConfigurationManager::_getRoute(std::map<std::string, JsonValue>::const_iterator &it,
 		ConfigurationObject &configTmp)
 {
+	if (it->first.find_first_of('/') != 0)
+	{
+		std::cout << it->first << ": route must begin by a '/'" << std::endl;
+		throw ConfigurationManager::ErrorUserConfig();
+	}
+	else if (it->first != "/" && it->first[it->first.size() - 1] == '/')
+	{
+		std::cout << it->first << ": route must not be terminated by a '/'" << std::endl;
+		throw ConfigurationManager::ErrorUserConfig();
+	}
+
 	Route &routeRef = configTmp.routes[it->first];
 	std::map<std::string, JsonValue>	mapJson = it->second.getObject();
 	
@@ -311,7 +329,10 @@ void	ConfigurationManager::_getRoute(std::map<std::string, JsonValue>::const_ite
 	}
 	if (routeRef.cgiPath.empty() != routeRef.cgiExtension.empty())
 		throw ConfigurationManager::ErrorUserConfig();
-		
+	if (routeRef.location.empty())
+	{
+		routeRef.location = "." + it->first;
+	}		
 }
 
 std::vector<std::string>	ConfigurationManager::_getContentStringArrayJson(const JsonValue &json)
@@ -352,7 +373,12 @@ void	ConfigurationManager::_checkGetContentServer(
 		std::map<std::string, JsonValue>::const_iterator &it, ConfigurationObject &configTmp)
 {
 	//std::cout << "	" << it->first << std::endl;
-	if (it->first == "host")
+	if (it->first.empty())
+	{
+		std::cout << "Empty field /!\\" << std::endl;
+		throw ConfigurationManager::ErrorUserConfig();
+	}
+	else if (it->first == "host")
 	{
 		if (it->second.isString() == false)
 			throw ConfigurationManager::ErrorUserConfig();
@@ -425,7 +451,6 @@ void	ConfigurationManager::_checkEachServerJson(std::map<std::string, JsonValue>
 		//std::cout << "-> Checking server: " << it->first << std::endl;
 		this->_checkServerJson(it->second.getObject());
 	}
-	this->printConfig();
 }
 
 void	ConfigurationManager::checkJson(void)
