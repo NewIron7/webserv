@@ -1,0 +1,112 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit&display=swap');
+
+body {
+    background-color: hsl(217, 54%, 11%);
+    font-family: 'Outfit', sans-serif;
+}
+
+main {
+    background-color: hsl(216, 50%, 16%);
+    max-width: 360px;
+    max-height: 720px;
+    min-width: 244px;
+    margin: auto;
+    margin-top: 2%;
+    border-radius: 5%;
+    padding: 30px;
+    box-shadow: 0px 0px 100px black;
+}
+
+.nft {
+    max-width:100%;
+    max-height:100%;
+    border-radius: 5%;
+
+    transition: .5s ease;
+    backface-visibility: hidden;
+}
+
+hr {
+    border: 1px solid hsl(215, 32%, 27%);
+}
+
+p {
+    font-size: 18px;
+    color: hsl(215, 51%, 70%);
+}
+
+strong {
+    color: white;
+    font-weight: 300;
+}
+
+h1 {
+    color: white;
+}
+
+h1:hover, strong:hover {
+    color: hsl(178, 100%, 50%);
+}
+
+.info {
+    display: flex;
+    justify-content: space-between;
+}
+
+.eth-price {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.clock {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.eth-logo {
+    margin: 0px;
+    max-width:100%;
+    max-height:100%;
+    width: auto;
+    height: 20px;
+}
+
+.clock-logo {
+    margin: 0px;
+    max-width:100%;
+    max-height:100%;
+    width: auto;
+    height: 20px;
+}
+
+.clock-text {
+    margin: 0px;
+    margin-left: 5px;
+}
+
+.eth-text {
+    margin: 0px;
+    margin-left: 5px;
+    color: hsl(178, 100%, 50%);
+}
+
+footer {
+    margin-top: 2%;
+}
+
+.creator {
+    display: flex;
+    align-items: center;
+}
+
+.creator img {
+    width: 10%;
+    border: 1px solid white;
+    border-radius: 50%;
+}
+
+.creator p {
+    margin-left: 15px;
+}

@@ -44,6 +44,8 @@ class Request
 
 		void	setErrorCode(const unsigned int err);
 		void	setErrorMsg(const std::string &txt);
+
+		void	setCodeMsg(const unsigned int err, const std::string &txt);
 	
 	private:
 		std::string	_method;

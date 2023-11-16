@@ -19,22 +19,22 @@ static bool hasReadPermission(const std::string& filename) {
 
 std::string Sockets::_readFile(const std::string& filename) {
 	Request	&req = this->oRequest;
-
+	
 	if (!fileExists(filename)) {
 		//std::cerr << "File doesn't exist: " << filename << std::endl;
-		req.setErrorCode(404);
+		req.setCodeMsg(404, "No ressource");
 		throw Sockets::Error();
 	}
 
 	if (!isRegularFile(filename)) {
 		//std::cerr << "Not a regular file: " << filename << std::endl;
-		req.setErrorCode(404);
+		req.setCodeMsg(404, "Not a file");
 		throw Sockets::Error();
 	}
 
 	if (!hasReadPermission(filename)) {
 		//std::cerr << "No read permission for file: " << filename << std::endl;
-		req.setErrorCode(403);
+		req.setCodeMsg(404, "The program doesnt have the permission to open this file");
 		throw Sockets::Error();
 	}
 
@@ -43,7 +43,7 @@ std::string Sockets::_readFile(const std::string& filename) {
 	if (!file.is_open()) {
 		// Handle error if the file cannot be opened
 		//std::cerr << "Error opening file: " << strerror(errno) << std::endl;
-		req.setErrorCode(500);
+		req.setCodeMsg(500, "Error while opening the file");
 		throw Sockets::Error();
 	}
 
@@ -59,7 +59,7 @@ std::string Sockets::_readFile(const std::string& filename) {
 	if (file.bad()) {
 		// Handle error if there was a problem reading the file
 		//std::cerr << "Error reading file: " << strerror(errno) << std::endl;
-		req.setErrorCode(500);
+		req.setCodeMsg(500, "Error while reading the file");
 		throw Sockets::Error();
 	}
 

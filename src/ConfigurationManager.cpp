@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/09 13:19:39 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/15 10:24:43 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/16 10:17:39 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -253,7 +253,7 @@ void ConfigurationManager::parseJsonArray(const std::string& content, size_t& po
 }
 
 void	ConfigurationManager::_getContentRoute(Route &routeRef,
-			std::map<std::string, JsonValue>::const_iterator &it)
+		std::map<std::string, JsonValue>::const_iterator &it)
 {
 	if (it->second.isString() == true)
 	{
@@ -263,11 +263,25 @@ void	ConfigurationManager::_getContentRoute(Route &routeRef,
 		}
 		else if (it->first == "location")
 		{
-			routeRef.location = it->second.getString();
+			if (it->second.getString().find_first_of('/') != 0 
+					&& it->second.getString().find("./") != 0)
+			{
+				std::cout << it->second.getString()
+					<< ": location must begin by a '/' or './'" << std::endl;
+				throw ConfigurationManager::ErrorUserConfig();
+			}
+			else if (it->second.getString() != "/"
+					&& it->second.getString()[it->second.getString().size() - 1] == '/')
+			{
+				std::cout << it->second.getString()
+					<< ": location must not be terminated by a '/'" << std::endl;
+				throw ConfigurationManager::ErrorUserConfig();
+			}
+			routeRef.location = it->second.getString() + "/";
 		}
 		else if (it->first == "directoryListing")
 		{
-			if (it->second.getString() != "true" || it->second.getString() != "false")
+			if (it->second.getString() != "true" && it->second.getString() != "false")
 				throw ConfigurationManager::ErrorUserConfig();
 			else if (it->second.getString() == "true")
 				routeRef.directoryListing = true;
@@ -321,7 +335,7 @@ void	ConfigurationManager::_getRoute(std::map<std::string, JsonValue>::const_ite
 
 	Route &routeRef = configTmp.routes[it->first];
 	std::map<std::string, JsonValue>	mapJson = it->second.getObject();
-	
+
 	for (std::map<std::string, JsonValue>::const_iterator it = mapJson.begin();
 			it != mapJson.end(); ++it)
 	{

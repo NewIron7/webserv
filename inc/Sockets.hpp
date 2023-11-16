@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/23 12:04:20 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/16 07:41:01 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/16 08:32:13 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef SOCKETS_HPP
@@ -86,6 +86,8 @@ class Sockets
 		std::string _generateHTTPResponseHeader(const Route &target);
 
 		std::string _getExtFile(const std::string &filename);
+
+		void	_getRootFileDir(Route &target);
 
 		class Error : public std::exception
 		{

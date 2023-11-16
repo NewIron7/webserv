@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/08 12:39:57 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/16 07:40:44 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/16 10:14:55 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Sockets.hpp"
@@ -16,7 +16,7 @@ void	Sockets::_checkBodyEmpty(void)
 	Request	&req = this->oRequest;
 	if (req.getBody().empty() == false)
 	{
-		req.setErrorCode(400);
+		req.setCodeMsg(400, "Your request must have an empty body");
 		throw Sockets::Error();
 	}
 }
@@ -27,7 +27,7 @@ void	Sockets::_checkBodySize(const ConfigurationObject &currentConfig)
 
 	if (currentConfig.isBodySize && currentConfig.bodySize < req.getBody().size())
 	{
-		req.setErrorCode(400);
+		req.setCodeMsg(400, "The size of your request's body is too big based on the config");
 		throw Sockets::Error();
 	}
 }
@@ -59,9 +59,10 @@ Route	Sockets::_getRealTarget(Request &req, const ConfigurationObject &currentCo
 	if (sizeRoute)
 	{
 		std::string dirListAdd = targetTmp.substr(sizeRoute);
+		std::cout << targetTmp << " " << dirListAdd << std::endl;
 		if (dirListAdd.size() && realTarget.directoryListing == false && dirListAdd != "/")
 		{
-			req.setErrorCode(404);
+			req.setCodeMsg(403, "Directory listing has been disactivated in the config");
 			throw Sockets::Error();
 		}
 		else
@@ -76,7 +77,7 @@ void	Sockets::_checkMethodAuthorized(const Route &target, const std::string m)
 	{
 		if (target.empty == false)
 		{
-			this->oRequest.setErrorCode(405);
+			this->oRequest.setCodeMsg(405, m + " is not allowed by the config");
 			throw Sockets::Error();
 		}
 	}
@@ -118,18 +119,42 @@ std::string Sockets::_generateHTTPResponseHeader(const Route &target) {
     return response.str();
 }
 
+void	Sockets::_getRootFileDir(Route &target)
+{
+	if (target.dir)
+	{
+		if (target.root.empty())
+		{
+			this->oRequest.setCodeMsg(404, "No ressource");
+			throw Sockets::Error();
+		}
+		else
+		{
+			if (target.location[target.location.size() - 1] != '/')
+				target.location += "/";
+			target.location += target.root;
+		}
+	}
+}
+
 void	Sockets::_processGET(const ConfigurationObject &currentConfig)
 {
 	Request	&req = this->oRequest;
+	//get realTarget(path) and check if directoryListing
 	Route	target = this->_getRealTarget(req, currentConfig);
+	
+	this->_checkMethodAuthorized(target, "GET");
+	this->_checkBodyEmpty();
+
+	this->response.clear();
+	//check if it's a directory and add root to location
+	this->_getRootFileDir(target);
 	
 	std::cout << "Current route: " << std::endl;
 	target.printRoute();
 
-	this->_checkMethodAuthorized(target, "GET");
-	this->_checkBodyEmpty();
 
-	//check if it's a directory and get hold of content file or send it to cgi if it's one
+	//check if it is a CGI
 
 	//get hold of content file
 	this->response = this->_readFile(target.location);
@@ -145,7 +170,7 @@ void	Sockets::_processPOST(const ConfigurationObject &currentConfig)
 {
 	Request	&req = this->oRequest;
 	Route	target = this->_getRealTarget(req, currentConfig);
-	
+
 	this->_checkMethodAuthorized(target, "POST");
 	this->_checkBodySize(currentConfig);
 		
@@ -215,6 +240,7 @@ void	Sockets::process(void)
 		return ;
 	}
 	//this->oRequest.printAttributes();
+	this->oRequest.setErrorCode(200);
 	
 	const ConfigurationObject &currentConfig = this->_getCurrentConfig();
 	//std::cout << "***Config found: " << std::endl;

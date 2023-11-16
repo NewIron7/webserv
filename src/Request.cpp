@@ -50,6 +50,7 @@ void Request::printAttributes(void) const
 
 	std::cout << "Body: " << _body << std::endl;
 	std::cout << "Error Code: " << _errorCode << std::endl;
+	std::cout << "Error Msg: " << _errorMsg << std::endl;
 }
 
 void	Request::_getElemRequestLine(std::string requestLine)
@@ -273,7 +274,7 @@ void	Request::_getHeaders(std::string &r)
 	this->_body = r;
 }
 
-Request::Request(std::string r): _port(80), _errorCode(0)
+Request::Request(std::string r): _port(80), _errorCode(0), _errorMsg("Error")
 {
 	this->_getRequestLine(r);
 	if (this->_errorCode)
@@ -330,5 +331,11 @@ const std::string &Request::getErrorMsg() const {
 void	Request::setErrorMsg(const std::string &txt)
 {
 	this->_errorMsg = txt;
+}
+
+void	Request::setCodeMsg(const unsigned int err, const std::string &txt)
+{
+	this->setErrorCode(err);
+	this->setErrorMsg(txt);
 }
 
