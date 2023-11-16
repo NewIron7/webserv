@@ -6,12 +6,12 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 16:13:32 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/15 11:37:11 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/16 06:24:15 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Request.hpp"
 
-Request::Request(void) {}
+Request::Request(void): _errorCode(0), _errorMsg("Error") {}
 
 Request	&Request::operator=(const Request& rhs)
 {
@@ -27,6 +27,7 @@ Request	&Request::operator=(const Request& rhs)
 	this->_headers = rhs._headers;
 	this->_body = rhs._body;
 	this->_errorCode = rhs._errorCode;
+	this->_errorMsg = rhs._errorMsg;
 
 	return (*this);
 }
@@ -99,7 +100,10 @@ void	Request::_getRequestLine(std::string &r)
 	std::string method[3] = {"GET", "POST", "DELETE"};
 	bool found = (std::find(method, method + 3, this->_method) != method + 3);
 	if (found == false)
+	{
 		this->_errorCode = 501;
+		return ;
+	}
 	//check target: format and get query
 	std::string tmp = this->_target.substr(0, this->_target.find("?"));
 	if (tmp.empty())
@@ -318,5 +322,13 @@ unsigned int Request::getErrorCode() const {
 void	Request::setErrorCode(const unsigned int err)
 {
 	this->_errorCode = err;
+}
+const std::string &Request::getErrorMsg() const {
+    return this->_errorMsg;
+}
+
+void	Request::setErrorMsg(const std::string &txt)
+{
+	this->_errorMsg = txt;
 }
 

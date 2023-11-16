@@ -6,19 +6,22 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/23 12:04:20 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/15 10:32:59 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/16 07:41:01 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef SOCKETS_HPP
 # define SOCKETS_HPP
 
+# include <fstream>
 # include <unistd.h>
 # include <iostream>
 # include <cstring>
 # include <sys/epoll.h>
+# include <sys/stat.h>
 # include <arpa/inet.h>
 # include <cerrno>
 # include <fcntl.h>
+# include <cstdlib>
 
 # include "Request.hpp"
 # include "InternalError.hpp"
@@ -78,6 +81,11 @@ class Sockets
 				const std::string m);
 		Route					_getRealTarget(Request &req,
 				const ConfigurationObject &currentConfig);
+		std::string	_readFile(const std::string& filename);
+
+		std::string _generateHTTPResponseHeader(const Route &target);
+
+		std::string _getExtFile(const std::string &filename);
 
 		class Error : public std::exception
 		{

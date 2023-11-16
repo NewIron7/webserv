@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/13 11:38:33 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/15 09:11:24 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/16 06:36:18 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef ROUTE_HPP
@@ -36,6 +36,7 @@ class Route
 		std::string					uploadPath;
 
 		bool						empty;
+		bool						dir;
 	private:
 };
 

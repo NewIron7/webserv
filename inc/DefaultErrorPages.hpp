@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/01 14:59:28 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/07 17:53:12 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/16 07:39:11 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef DEFAULTERRORPAGES_HPP
@@ -18,14 +18,24 @@
 		( std::ostringstream() << std::dec << x ) ).str()
 
 # include <string>
+# include <map>
 
 class DefaultErrorPages
 {
 	public:
 		static const std::string	generate(unsigned int code, std::string details);
+
+		static const std::string &getContentType(const std::string &ext);
+
+		static std::map<unsigned int, std::string>	statusMap;
+		static std::map<std::string, std::string> contentTypeMap;
+
 	private:
 		static std::string	genByCode(std::string code,
 			std::string name, std::string details);
+
+		static std::map<unsigned int, std::string> initStatusMap(void);
+		static std::map<std::string, std::string> initContentTypeMap(void);
 };
 
 #endif

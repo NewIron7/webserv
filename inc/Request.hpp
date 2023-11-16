@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 15:54:23 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/13 10:17:19 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/16 06:21:51 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef REQUEST_HPP
@@ -40,8 +40,10 @@ class Request
 		std::map<std::string, std::string>& getHeaders();
 		const std::string& getBody() const;
 		unsigned int getErrorCode() const;
+		const std::string& getErrorMsg() const;
 
 		void	setErrorCode(const unsigned int err);
+		void	setErrorMsg(const std::string &txt);
 	
 	private:
 		std::string	_method;
@@ -54,6 +56,7 @@ class Request
 		std::string	_body;
 
 		unsigned int	_errorCode;
+		std::string		_errorMsg;
 
 		void	_getRequestLine(std::string &r);
 		void	_getElemRequestLine(std::string requestLine);

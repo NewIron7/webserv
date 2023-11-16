@@ -6,12 +6,12 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/13 11:52:15 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/15 09:26:01 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/16 06:40:25 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Route.hpp"
 
-Route::Route(void): directoryListing(false), uploadedFile(false), empty(false)
+Route::Route(void): directoryListing(false), uploadedFile(false), empty(false), dir(false)
 {
 	return ;
 }
@@ -37,6 +37,7 @@ void Route::printRoute() const {
 	std::cout << "Uploaded File: " << (uploadedFile ? "true" : "false") << std::endl;
 	std::cout << "Upload Path: " << uploadPath << std::endl;
 	std::cout << "Empty: " << (empty ? "true" : "false") << std::endl;
+	std::cout << "dir: " << (dir ? "true" : "false") << std::endl;
 }
 
 Route& Route::operator=(const Route& other) {
