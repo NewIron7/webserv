@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/23 12:04:20 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/16 08:32:13 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/17 12:39:53 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef SOCKETS_HPP
@@ -69,6 +69,7 @@ class Sockets
 		void	_processMethod(const ConfigurationObject &currentConfig);
 		void	_processGET(const ConfigurationObject &currentConfig);
 		void	_processPOST(const ConfigurationObject &currentConfig);
+		void	_processPOSTMethod(const Route &target);
 		void	_processDELETE(const ConfigurationObject &currentConfig);
 		void	_checkBodyEmpty(void);
 		void	_checkBodySize(const ConfigurationObject &currentConfig);
@@ -84,10 +85,22 @@ class Sockets
 		std::string	_readFile(const std::string& filename);
 
 		std::string _generateHTTPResponseHeader(const Route &target);
+		std::string _generateHTTPResponseHeaderPOST(void);
 
 		std::string _getExtFile(const std::string &filename);
 
 		void	_getRootFileDir(Route &target);
+
+		bool	_checkWritePermission(const std::string &file);
+		void	_processUpload(const Route &target);
+
+		void	_createFile(const std::string& filePath);
+		void	_appendToFile(const std::string& filename,
+			const std::string& content);
+
+		void	_parseMultipartFormData(const std::string& body,
+			const std::string &boundary);
+		std::string _getBoundaryFromContentType(const std::string& contentType);
 
 		class Error : public std::exception
 		{

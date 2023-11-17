@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 16:13:32 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/16 06:24:15 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/17 12:45:01 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Request.hpp"
@@ -310,6 +310,13 @@ unsigned int Request::getPort() const {
 
 std::map<std::string, std::string>& Request::getHeaders() {
     return this->_headers;
+}
+
+std::string	Request::getHeader(const std::string &name)
+{
+	if (this->_headers.find(name) == this->_headers.end())
+		return ("");
+	return (this->_headers[name]);
 }
 
 const std::string& Request::getBody() const {

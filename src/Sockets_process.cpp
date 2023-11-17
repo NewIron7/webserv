@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/08 12:39:57 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/16 10:14:55 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/17 12:02:12 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Sockets.hpp"
@@ -27,7 +27,7 @@ void	Sockets::_checkBodySize(const ConfigurationObject &currentConfig)
 
 	if (currentConfig.isBodySize && currentConfig.bodySize < req.getBody().size())
 	{
-		req.setCodeMsg(400, "The size of your request's body is too big based on the config");
+		req.setCodeMsg(413, "The size of your request's body is too big based on the config");
 		throw Sockets::Error();
 	}
 }
@@ -58,15 +58,19 @@ Route	Sockets::_getRealTarget(Request &req, const ConfigurationObject &currentCo
 	}
 	if (sizeRoute)
 	{
+
 		std::string dirListAdd = targetTmp.substr(sizeRoute);
-		std::cout << targetTmp << " " << dirListAdd << std::endl;
 		if (dirListAdd.size() && realTarget.directoryListing == false && dirListAdd != "/")
 		{
 			req.setCodeMsg(403, "Directory listing has been disactivated in the config");
 			throw Sockets::Error();
 		}
 		else
-			realTarget.location += targetTmp.substr(sizeRoute);
+		{
+			if (dirListAdd.size() && dirListAdd[0] != '/')
+				realTarget.location += "/";
+			realTarget.location += dirListAdd;
+		}
 	}
 	return (realTarget);
 }
@@ -173,8 +177,17 @@ void	Sockets::_processPOST(const ConfigurationObject &currentConfig)
 
 	this->_checkMethodAuthorized(target, "POST");
 	this->_checkBodySize(currentConfig);
-		
-	this->response = DefaultErrorPages::generate( 418, "Test POST");
+	
+	this->response.clear();
+	//check if it's a directory and add root to location
+	this->_getRootFileDir(target);
+	
+	//check if it is a CGI
+	
+	//deal wtih the post resquest
+	this->_processPOSTMethod(target);
+
+	//this->response = DefaultErrorPages::generate( 418, "Test POST");
 	(void)req;
 }
 

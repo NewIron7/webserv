@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/09 13:19:39 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/16 10:17:39 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/17 11:53:47 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -270,14 +270,19 @@ void	ConfigurationManager::_getContentRoute(Route &routeRef,
 					<< ": location must begin by a '/' or './'" << std::endl;
 				throw ConfigurationManager::ErrorUserConfig();
 			}
-			else if (it->second.getString() != "/"
+			else if (it->second.getString() != "/" && it->second.getString() != "./"
 					&& it->second.getString()[it->second.getString().size() - 1] == '/')
 			{
 				std::cout << it->second.getString()
 					<< ": location must not be terminated by a '/'" << std::endl;
 				throw ConfigurationManager::ErrorUserConfig();
 			}
-			routeRef.location = it->second.getString() + "/";
+			if (it->second.getString() == "/")
+				routeRef.location = "";
+			else if (it->second.getString() == "./")
+				routeRef.location = ".";
+			else
+				routeRef.location = it->second.getString() + "/";
 		}
 		else if (it->first == "directoryListing")
 		{
@@ -304,7 +309,11 @@ void	ConfigurationManager::_getContentRoute(Route &routeRef,
 			routeRef.uploadPath = it->second.getString();
 		}
 		else
+		{
+			std::cout << it->first << " bad key" << std::endl;
 			throw ConfigurationManager::ErrorUserConfig();
+		}
+			
 	}
 	else if (it->second.isArray() == true)
 	{
@@ -313,10 +322,16 @@ void	ConfigurationManager::_getContentRoute(Route &routeRef,
 			routeRef.methods = this->_getContentStringArrayJson(it->second);
 		}
 		else
+		{
+			std::cerr << it->first << " cannot be an Array" << std::endl;
 			throw ConfigurationManager::ErrorUserConfig();
+		}
 	}
 	else
+	{
+		std::cerr << it->first << ": object are not allowed here" << std::endl;
 		throw ConfigurationManager::ErrorUserConfig();
+	}
 }
 
 void	ConfigurationManager::_getRoute(std::map<std::string, JsonValue>::const_iterator &it,
@@ -324,12 +339,12 @@ void	ConfigurationManager::_getRoute(std::map<std::string, JsonValue>::const_ite
 {
 	if (it->first.find_first_of('/') != 0)
 	{
-		std::cout << it->first << ": route must begin by a '/'" << std::endl;
+		std::cerr << it->first << ": route must begin by a '/'" << std::endl;
 		throw ConfigurationManager::ErrorUserConfig();
 	}
 	else if (it->first != "/" && it->first[it->first.size() - 1] == '/')
 	{
-		std::cout << it->first << ": route must not be terminated by a '/'" << std::endl;
+		std::cerr << it->first << ": route must not be terminated by a '/'" << std::endl;
 		throw ConfigurationManager::ErrorUserConfig();
 	}
 
@@ -342,7 +357,10 @@ void	ConfigurationManager::_getRoute(std::map<std::string, JsonValue>::const_ite
 		this->_getContentRoute(routeRef, it);
 	}
 	if (routeRef.cgiPath.empty() != routeRef.cgiExtension.empty())
+	{
+		std::cerr << "The both cgiPath and cgiExtension have to be instanciated" << std::endl;
 		throw ConfigurationManager::ErrorUserConfig();
+	}
 	if (routeRef.location.empty())
 	{
 		routeRef.location = "." + it->first;
@@ -358,7 +376,10 @@ std::vector<std::string>	ConfigurationManager::_getContentStringArrayJson(const 
 			it != arrayJson.end(); ++it)
 	{
 		if (it->isString() == false)
+		{
+			std::cerr << "You can only have string in array" << std::endl;
 			throw ConfigurationManager::ErrorUserConfig();
+		}
 		arrayTmp.push_back(it->getString());
 	}
 	return (arrayTmp);
@@ -395,34 +416,53 @@ void	ConfigurationManager::_checkGetContentServer(
 	else if (it->first == "host")
 	{
 		if (it->second.isString() == false)
+		{
+			std::cerr << "host must be a string" << std::endl;
 			throw ConfigurationManager::ErrorUserConfig();
+		}
 		configTmp.host = it->second.getString();
 	}
 	else if (it->first == "port")
 	{
 		if (it->second.isString() == false)
+		{
+			std::cerr << "port must be a number" << std::endl;
 			throw ConfigurationManager::ErrorUserConfig();
+		}
 		std::string portTmp = it->second.getString();
 		if (isStringOnlyDigits(portTmp) == false)
+		{
+			std::cerr << "port must be a number" << std::endl;
 			throw ConfigurationManager::ErrorUserConfig();
+		}
 		configTmp.port = stringToInt(portTmp);
 	}
 	else if (it->first == "server_names")
 	{
 		if (it->second.isArray() == false)
+		{
+			std::cerr << "server_names must be an array" << std::endl;
 			throw ConfigurationManager::ErrorUserConfig();
+		}
 		configTmp.server_names = this->_getContentStringArrayJson(it->second);
 	}
 	else if (it->first == "defaultErrorPages")
 	{
 		if (it->second.isObject() == false)
+		{
+			std::cerr << "defaultErrorPages must be an object" << std::endl;
 			throw ConfigurationManager::ErrorUserConfig();
+		}
+			
 		configTmp.defaultErrorPages = this->_getContentStringObjectJson(it->second);
 	}
 	else if (it->first == "bodySize")
 	{
 		if (it->second.isString() == false || isStringOnlyDigits(it->second.getString()) == false)
+		{
+			std::cerr << "Body size must be a number" << std::endl;
 			throw ConfigurationManager::ErrorUserConfig();
+		}
 		configTmp.isBodySize = true;
 		configTmp.bodySize = stringToInt(it->second.getString());
 	}
@@ -443,8 +483,11 @@ void	ConfigurationManager::_checkServerJson(std::map<std::string, JsonValue> ser
 {
 	if (serverContentMap.find("host") == serverContentMap.end()
 			|| serverContentMap.find("port") == serverContentMap.end())
+	{
+		std::cerr << "Both host and port have to be instanciated for each server" << std::endl;
 		throw ConfigurationManager::ErrorUserConfig();
-
+	}
+		
 	ConfigurationObject	configTmp;
 	for (std::map<std::string, JsonValue>::const_iterator it = serverContentMap.begin();
 			it != serverContentMap.end(); ++it)
@@ -471,10 +514,17 @@ void	ConfigurationManager::checkJson(void)
 {
 	//std::cout << "[] check Json" << std::endl;
 	if (this->configData.isObject() == false)
+	{
+		std::cerr << "Your config has to be in a object {}" << std::endl;
 		throw ConfigurationManager::ErrorUserConfig();
+	}
+		
 	std::map<std::string, JsonValue>	serversMap = this->configData.getObject();
 	if (serversMap.empty() == true)
+	{
+		std::cerr << "There no server is your config" << std::endl;
 		throw ConfigurationManager::ErrorUserConfig();
+	}
 	this->_checkEachServerJson(serversMap);
 }
 
