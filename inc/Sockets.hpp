@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/23 12:04:20 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/17 12:39:53 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/18 05:49:00 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef SOCKETS_HPP
@@ -89,7 +89,7 @@ class Sockets
 
 		std::string _getExtFile(const std::string &filename);
 
-		void	_getRootFileDir(Route &target);
+		void	_getRootFileDir(Route &target, bool isGet);
 
 		bool	_checkWritePermission(const std::string &file);
 		void	_processUpload(const Route &target);
@@ -99,8 +99,13 @@ class Sockets
 			const std::string& content);
 
 		void	_parseMultipartFormData(const std::string& body,
-			const std::string &boundary);
+			const std::string &boundary, const Route& target);
 		std::string _getBoundaryFromContentType(const std::string& contentType);
+		void	_parseContentMultipartFormData(const std::string& content,
+				const Route &target);
+		std::string	_getFilenameMultipartFormData(const std::string& headers);
+
+		void	_canCreateFileInDirectory(const std::string& path);
 
 		class Error : public std::exception
 		{

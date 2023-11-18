@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/01 15:09:16 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/17 12:07:39 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/18 06:16:34 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "DefaultErrorPages.hpp"
@@ -204,6 +204,9 @@ const std::string	DefaultErrorPages::generate(unsigned int code, std::string det
 
 	switch (code)
 	{
+		case 202:
+			page = genByCode("202", "Created", details);
+			break;
 		case 204:
 			page = genByCode("204", "No Content", details);
 			break;

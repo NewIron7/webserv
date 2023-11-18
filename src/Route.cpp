@@ -6,12 +6,13 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/13 11:52:15 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/16 06:40:25 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/18 04:12:40 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Route.hpp"
 
-Route::Route(void): directoryListing(false), uploadedFile(false), empty(false), dir(false)
+Route::Route(void): location("."), directoryListing(false), uploadedFile(false),
+	empty(false), dir(false)
 {
 	return ;
 }

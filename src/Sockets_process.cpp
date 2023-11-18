@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/08 12:39:57 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/17 12:02:12 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/18 04:18:00 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Sockets.hpp"
@@ -123,11 +123,11 @@ std::string Sockets::_generateHTTPResponseHeader(const Route &target) {
     return response.str();
 }
 
-void	Sockets::_getRootFileDir(Route &target)
+void	Sockets::_getRootFileDir(Route &target, bool isGet)
 {
 	if (target.dir)
 	{
-		if (target.root.empty())
+		if (target.root.empty() && isGet)
 		{
 			this->oRequest.setCodeMsg(404, "No ressource");
 			throw Sockets::Error();
@@ -152,7 +152,7 @@ void	Sockets::_processGET(const ConfigurationObject &currentConfig)
 
 	this->response.clear();
 	//check if it's a directory and add root to location
-	this->_getRootFileDir(target);
+	this->_getRootFileDir(target, true);
 	
 	std::cout << "Current route: " << std::endl;
 	target.printRoute();
@@ -180,7 +180,7 @@ void	Sockets::_processPOST(const ConfigurationObject &currentConfig)
 	
 	this->response.clear();
 	//check if it's a directory and add root to location
-	this->_getRootFileDir(target);
+	this->_getRootFileDir(target, false);
 	
 	//check if it is a CGI
 	

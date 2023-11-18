@@ -306,7 +306,27 @@ void	ConfigurationManager::_getContentRoute(Route &routeRef,
 		else if (it->first == "uploadPath")
 		{
 			routeRef.uploadedFile = true;
-			routeRef.uploadPath = it->second.getString();
+
+			if (it->second.getString().find_first_of('/') != 0 
+					&& it->second.getString().find("./") != 0)
+			{
+				std::cout << it->second.getString()
+					<< ": uploadPath must begin by a '/' or './'" << std::endl;
+				throw ConfigurationManager::ErrorUserConfig();
+			}
+			else if (it->second.getString() != "/" && it->second.getString() != "./"
+					&& it->second.getString()[it->second.getString().size() - 1] == '/')
+			{
+				std::cout << it->second.getString()
+					<< ": uploadPath must not be terminated by a '/'" << std::endl;
+				throw ConfigurationManager::ErrorUserConfig();
+			}
+			if (it->second.getString() == "/")
+				routeRef.uploadPath = "";
+			else if (it->second.getString() == "./")
+				routeRef.uploadPath = ".";
+			else
+				routeRef.uploadPath = it->second.getString() + "/";
 		}
 		else
 		{
