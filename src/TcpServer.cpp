@@ -144,8 +144,8 @@ void	TcpServer::_processEPOLLIN(struct epoll_event &ev)
 		Sockets	&client = this->_streams[ev.data.fd];
 
 		//client.printAttributes();
-		char	buf[BUFFER_SIZE + 1];
-		memset((void*)buf, 0, BUFFER_SIZE + 1);
+		char	buf[BUFFER_SIZE];
+		memset((void*)buf, 0, BUFFER_SIZE);
 
 		int	bytesRead = read(client.socket, buf, BUFFER_SIZE);
 		if (bytesRead == -1)
@@ -155,9 +155,10 @@ void	TcpServer::_processEPOLLIN(struct epoll_event &ev)
 		}
 		else
 		{
-			buf[bytesRead] = '\0';
+			//buf[bytesRead] = '\0';
 			std::cout << buf << std::endl;
-			client.request += buf;
+			client.request.insert(client.request.size(), buf, bytesRead);
+			//client.request += buf;
 			std::cout << client.request.size() << std::endl;
 			std::cout << "\033[36m[+] " << bytesRead << " bytes read\033[0m" << std::endl;
 			client.reqGot = true;
