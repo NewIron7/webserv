@@ -22,7 +22,7 @@ std::string Sockets::_readFile(const std::string& filename) {
 	
 	if (!fileExists(filename)) {
 		//std::cerr << "File doesn't exist: " << filename << std::endl;
-		req.setCodeMsg(404, "No ressource");
+		req.setCodeMsg(404, "No ressource" + this->oRequest.getTarget());
 		throw Sockets::Error();
 	}
 

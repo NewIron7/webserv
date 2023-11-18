@@ -204,6 +204,9 @@ const std::string	DefaultErrorPages::generate(unsigned int code, std::string det
 
 	switch (code)
 	{
+		case 200:
+			page = genByCode("200", "OK", details);
+			break;
 		case 202:
 			page = genByCode("202", "Created", details);
 			break;

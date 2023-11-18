@@ -106,6 +106,7 @@ class Sockets
 		std::string	_getFilenameMultipartFormData(const std::string& headers);
 
 		void	_canCreateFileInDirectory(const std::string& path);
+		void	_removeFile(const std::string& filePath);
 
 		class Error : public std::exception
 		{

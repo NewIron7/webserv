@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/08 12:39:57 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/18 04:18:00 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/18 12:22:09 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Sockets.hpp"
@@ -67,9 +67,15 @@ Route	Sockets::_getRealTarget(Request &req, const ConfigurationObject &currentCo
 		}
 		else
 		{
-			if (dirListAdd.size() && dirListAdd[0] != '/')
+			std::cout << realTarget.location << std::endl;
+			if (dirListAdd.size() && dirListAdd[0] != '/'
+					&& realTarget.location[realTarget.location.size() - 1] != '/')
 				realTarget.location += "/";
+			else if (dirListAdd.size() && dirListAdd[0] == '/'
+					&& realTarget.location[realTarget.location.size() - 1] == '/')
+				dirListAdd.erase(dirListAdd.begin());
 			realTarget.location += dirListAdd;
+			std::cout << dirListAdd << std::endl;
 		}
 	}
 	return (realTarget);
@@ -191,18 +197,69 @@ void	Sockets::_processPOST(const ConfigurationObject &currentConfig)
 	(void)req;
 }
 
+static bool fileExists(const std::string& filename) {
+	struct stat buffer;
+	return (stat(filename.c_str(), &buffer) == 0);
+}
+
+static bool isRegularFile(const std::string& filename) {
+	struct stat buffer;
+	if (stat(filename.c_str(), &buffer) != 0) {
+		return false; // Unable to get file status
+	}
+	return S_ISREG(buffer.st_mode);
+}
+
+void	Sockets::_removeFile(const std::string& filePath) {
+    // Check if file exists
+    if (!fileExists(filePath)) {
+        this->oRequest.setCodeMsg(404, "No ressource");
+		throw Sockets::Error();
+    }
+
+	if (!isRegularFile(filePath)) {
+		//std::cerr << "Not a regular file: " << filename << std::endl;
+		this->oRequest.setCodeMsg(403, "Not a file");
+		throw Sockets::Error();
+	}
+
+    // Check permissions for the file
+    if (access(filePath.c_str(), W_OK) != 0) {
+        this->oRequest.setCodeMsg(403, "The program doesnt have the permission to open this file");
+		throw Sockets::Error();
+    }
+
+    // Attempt to delete the file
+    if (std::remove(filePath.c_str()) != 0) {
+        this->oRequest.setCodeMsg(500, "Error while removing the file");
+		throw Sockets::Error();
+    } else {
+        this->oRequest.setCodeMsg(200, "Ressource deleted successfuly");
+		throw Sockets::Error();
+    }
+}
+
 void	Sockets::_processDELETE(const ConfigurationObject &currentConfig)
 {
 	Request	&req = this->oRequest;
 	Route	target = this->_getRealTarget(req, currentConfig);
-	
-	std::cout << "Current route: " << std::endl;
-	target.printRoute();
 
 	this->_checkMethodAuthorized(target, "DELETE");
 	this->_checkBodyEmpty();
+
+	this->response.clear();
+	//check if it's a directory and add root to location
+	this->_getRootFileDir(target, false);
+
+	std::cout << "Current route: " << std::endl;
+	target.printRoute();
+
+	//check if it is a CGI
+
+	//process delete method
+	this->_removeFile(target.location);
 	
-	this->response = DefaultErrorPages::generate( 418, "Test DELETE");
+	//this->response = DefaultErrorPages::generate( 418, "Test DELETE");
 	(void)req;
 }
 
@@ -269,6 +326,7 @@ void	Sockets::process(void)
 	}
 	catch(const std::exception& e)
 	{
+		std::cout << this->oRequest.getErrorCode() << std::endl;
 		this->response = DefaultErrorPages::generate(
 			this->oRequest.getErrorCode(), this->oRequest.getErrorMsg());
 	}
