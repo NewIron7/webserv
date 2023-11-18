@@ -250,6 +250,7 @@ void	Sockets::process(void)
 	{
 		this->response = DefaultErrorPages::generate(
 			this->oRequest.getErrorCode(), "Error while parsing the request");
+		std::cout << this->oRequest.getMethod() << std::endl;
 		return ;
 	}
 	//this->oRequest.printAttributes();

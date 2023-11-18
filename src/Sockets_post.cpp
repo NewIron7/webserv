@@ -266,6 +266,8 @@ void	Sockets::_processUpload(const Route &target)
 
 		std::string boundary = this->_getBoundaryFromContentType(contentType);
 
+		std::cout << this->oRequest.getBody().size() << std::endl;
+
 		this->_parseMultipartFormData(this->oRequest.getBody(), boundary, target);
 
 		this->oRequest.setCodeMsg(202, "Ressources created");
