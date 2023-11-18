@@ -158,6 +158,7 @@ void	TcpServer::_processEPOLLIN(struct epoll_event &ev)
 			buf[bytesRead] = '\0';
 			std::cout << buf << std::endl;
 			client.request += buf;
+			std::cout << client.request.size() << std::endl;
 			std::cout << "\033[36m[+] " << bytesRead << " bytes read\033[0m" << std::endl;
 			client.reqGot = true;
 			client.resGen = false;
