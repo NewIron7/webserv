@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/08 12:39:57 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/18 12:22:09 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/19 11:58:55 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Sockets.hpp"
@@ -32,18 +32,9 @@ void	Sockets::_checkBodySize(const ConfigurationObject &currentConfig)
 	}
 }
 
-Route	Sockets::_getRealTarget(Request &req, const ConfigurationObject &currentConfig)
+void	Sockets::_getRealRoute(const ConfigurationObject &currentConfig,
+		const std::string &targetTmp, Route &realTarget, std::size_t &sizeRoute)
 {
-	const std::string &targetTmp = req.getTarget();
-	Route realTarget;
-	std::size_t	sizeRoute = 0;
-
-	//currentConfig.printParameters();
-
-	realTarget.location = "." + targetTmp;
-	realTarget.directoryListing = true;
-	realTarget.empty = true;
-
 	for (std::map<std::string, Route>::const_iterator it = currentConfig.routes.begin();
 			it != currentConfig.routes.end(); ++it)
 	{
@@ -56,6 +47,23 @@ Route	Sockets::_getRealTarget(Request &req, const ConfigurationObject &currentCo
 			sizeRoute = it->first.size();
 		}
 	}
+
+}
+
+
+Route	Sockets::_getRealTarget(Request &req, const ConfigurationObject &currentConfig)
+{
+	const std::string &targetTmp = req.getTarget();
+	Route realTarget;
+	std::size_t	sizeRoute = 0;
+
+	//currentConfig.printParameters();
+
+	realTarget.location = "." + targetTmp;
+	realTarget.directoryListing = true;
+	realTarget.empty = true;
+
+	this->_getRealRoute(currentConfig, targetTmp, realTarget, sizeRoute);
 	if (sizeRoute)
 	{
 
@@ -326,9 +334,17 @@ void	Sockets::process(void)
 	}
 	catch(const std::exception& e)
 	{
-		std::cout << this->oRequest.getErrorCode() << std::endl;
-		this->response = DefaultErrorPages::generate(
-			this->oRequest.getErrorCode(), this->oRequest.getErrorMsg());
+		this->response.clear();
+		//implement redirection if 404 error
+		if (this->oRequest.getErrorCode() == 404)
+		{
+			this->_processRedirection(currentConfig);
+		}
+		if (this->response.empty())
+		{
+			this->response = DefaultErrorPages::generate(
+				this->oRequest.getErrorCode(), this->oRequest.getErrorMsg());
+		}
 	}
 }
 

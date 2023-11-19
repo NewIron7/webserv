@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/23 12:04:20 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/18 05:49:00 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/19 11:49:16 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef SOCKETS_HPP
@@ -107,6 +107,12 @@ class Sockets
 
 		void	_canCreateFileInDirectory(const std::string& path);
 		void	_removeFile(const std::string& filePath);
+
+		void	_processRedirection(const ConfigurationObject &currentConfig);
+
+		void	_getRealRoute(const ConfigurationObject &currentConfig, 
+				const std::string &targetTmp, Route &realTarget,
+				std::size_t &sizeRoute);
 
 		class Error : public std::exception
 		{
