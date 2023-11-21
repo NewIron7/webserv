@@ -314,8 +314,7 @@ void	Sockets::process(void)
 	if (this->oRequest.getErrorCode())
 	{
 		this->response = DefaultErrorPages::generate(
-			this->oRequest.getErrorCode(), "Error while parsing the request");
-		std::cout << this->oRequest.getMethod() << std::endl;
+			this->oRequest.getErrorCode(), this->oRequest.getErrorMsg());
 		return ;
 	}
 	//this->oRequest.printAttributes();

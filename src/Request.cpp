@@ -155,28 +155,114 @@ static void	toUpperString(std::string &str)
 		*it = std::toupper(*it);
 }
 
-void	Request::_checkContentLength(const std::string &r)
+static size_t HexStringToSizeT(const std::string& hexStr) {
+    std::istringstream iss(hexStr);
+    size_t value;
+    iss >> std::hex >> value;
+
+    if (iss.fail()) {
+        throw std::exception();
+    }
+
+    return value;
+}
+
+void	Request::_processChunkedBody(std::string &body)
+{
+	std::string decodedBody;
+    size_t pos = 0;
+
+    while (1) {
+		if (pos >= body.size())
+		{
+			this->setCodeMsg(400, "Invalid chunked format: No terminator");
+			return ;
+		}
+
+        // Find the end of the chunk size line
+        size_t endLine = body.find("\r\n", pos);
+        if (endLine == std::string::npos) {
+            this->setCodeMsg(400, "Invalid chunked format: Missing chunk size");
+			return ;
+        }
+
+        // Parse chunk size
+        std::string hexLength = body.substr(pos, endLine - pos);
+        size_t chunkSize;
+        try {
+            chunkSize = HexStringToSizeT(hexLength);
+        } catch (std::exception& e) {
+			this->setCodeMsg(400, "Invalid chunked format: Invalid chunk size");
+			return ;
+        }
+
+        // Move position after the '\r\n' characters
+        pos = endLine + 2;
+
+        // Check for the last chunk
+        if (chunkSize == 0) {
+            // Check for the final CRLF
+            if (body.substr(pos, 2) != "\r\n") {
+				this->setCodeMsg(400, "Invalid chunked format: Invalid terminator");
+				return ;
+            }
+            break;
+        }
+
+        // Check if the remaining body is large enough for this chunk
+        if (pos + chunkSize + 2 > body.size()) {
+			this->setCodeMsg(400, "Invalid chunked format: Incomplete chunk");
+			return ;
+        }
+
+        // Extract the chunk data
+        decodedBody += body.substr(pos, chunkSize);
+        pos += chunkSize;
+
+		if (body.find("\r\n", pos) != pos)
+		{
+			this->setCodeMsg(400, "Invalid chunked format: '\\r\\n' missing at the end");
+			return ;
+		}
+
+        // Move position after the '\r\n' characters
+        pos += 2;
+    }
+
+    body = decodedBody;
+}
+
+void	Request::_checkContentLength(std::string &r)
 {
 	std::string cl = "CONTENT-LENGTH";
 	std::string te = "TRANSFER-ENCODING";
 	if (this->_headers.find(cl) != this->_headers.end())
 	{
-		if (isStringOnlyDigits(this->_headers[cl]) == false || r.empty())
-			this->_errorCode = 400;
+		if (isStringOnlyDigits(this->_headers[cl]) == false
+			|| (r.empty() && this->_headers[cl].compare("0")))
+			this->setCodeMsg(400, "Error with Content-Lenght (wrong format or empty body)");
 	}
 	else if (this->_headers.find(te) != this->_headers.end())
 	{
 		if (r.empty())
-			this->_errorCode = 400;
+			this->setCodeMsg(400,
+				"Body empty while Transfer-Encoding header set");
 		else
 		{
+			std::cout << "Transfer-encoding" << std::endl;
 			toUpperString(this->_headers[te]);
-			if (this->_headers[te].compare("CHUNKED"))
-				this->_errorCode = 411;
+			std::string value = this->_headers[te];
+			if (value.find("CHUNKED") == std::string::npos)
+				this->setCodeMsg(411, "Content lenght is needed");
+			else
+			{
+				std::cout << "Chunked request:\n";
+				this->_processChunkedBody(r);
+			}
 		}
 	}
 	else if (r.empty() == false)
-		this->_errorCode = 411;
+		this->setCodeMsg(411, "Content lenght is missing");
 }
 
 void	Request::_checkHost(void)
@@ -184,8 +270,8 @@ void	Request::_checkHost(void)
 	std::string	host = "HOST";
 	if (this->_headers.find(host) == this->_headers.end())
 	{
-		if (this->_pVersion.compare("HTTP/1.1") == 0)
-			this->_errorCode = 400;
+		//if (this->_pVersion.compare("HTTP/1.1") == 0)
+		this->setCodeMsg(411, "Wrong http version, should be HTTP/1.1");
 	}
 	else
 	{
@@ -194,7 +280,7 @@ void	Request::_checkHost(void)
 		{
 			this->_host = this->_headers[host].substr(0, found);
 			if (isStringOnlyDigits(this->_headers[host].substr(found + 1)) == false)
-				this->_errorCode = 400;
+				this->setCodeMsg(400, "Wrong format for port in HOST");
 			else
 			{
 				std::stringstream tmp;
@@ -215,8 +301,7 @@ void	Request::_checkBodyLength(void)
 	unsigned long length;
 	tmp >> length;
 	if (length != this->_body.length())
-		this->_errorCode = 400;
-	//check body length compared to what has been written in conf file
+		this->setCodeMsg(400, "Wrong Content lenght");
 }
 
 void	Request::_getHeaders(std::string &r)
@@ -238,31 +323,32 @@ void	Request::_getHeaders(std::string &r)
 		if (key.empty() || key.compare(r) == 0
 				|| this->_headers.find(key) != this->_headers.end())
 		{
-			this->_errorCode = 400;
+			this->setCodeMsg(400, "Error with this header: " + key);
 			return ;
 		}
 		line.erase(0, key.length() + 1);
 		if (line.empty())
 		{
-			this->_errorCode = 400;
+			this->setCodeMsg(400, "No value for header: " + key);
 			return ;
 		}
 		std::string value = trim(line, " \t\n\r\f\v");
 		if (value.empty())
 		{
-			this->_errorCode = 400;
+			this->setCodeMsg(400, "Wrong value for header: " + key);
 			return ;
 		}
 		if (this->_headers.find(key) != this->_headers.end())
 		{
-			this->_errorCode = 400;
+			this->setCodeMsg(400, "Header already give: " + key);
 			return ;
 		}
 		this->_headers[key] = value;
 	}
 	if (r.empty())
 	{
-		this->_errorCode = 400;
+		this->setCodeMsg(400,
+			"Header wrong format, empty line is missing");
 		return ;
 	}
 	else if (line.empty())
@@ -272,6 +358,7 @@ void	Request::_getHeaders(std::string &r)
 		return ;
 	this->_checkHost();
 	this->_body = r;
+	std::cout << "Body:\n" << this->_body << std::endl;
 }
 
 Request::Request(std::string r): _port(80), _errorCode(0), _errorMsg("Error")

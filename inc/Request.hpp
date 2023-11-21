@@ -65,9 +65,11 @@ class Request
 		void	_getElemRequestLine(std::string requestLine);
 		void    _checkWhitespaceElemRequestLine(void);
 		void	_getHeaders(std::string &r);
-		void    _checkContentLength(const std::string &r);
+		void    _checkContentLength(std::string &r);
 		void	_checkHost(void);
 		void	_checkBodyLength(void);
+
+		void	_processChunkedBody(std::string &body);
 };
 
 #endif
