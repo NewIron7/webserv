@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/08 12:39:57 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/19 11:58:55 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/22 12:35:36 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "Sockets.hpp"
@@ -75,7 +75,7 @@ Route	Sockets::_getRealTarget(Request &req, const ConfigurationObject &currentCo
 		}
 		else
 		{
-			std::cout << realTarget.location << std::endl;
+			//std::cout << realTarget.location << std::endl;
 			if (dirListAdd.size() && dirListAdd[0] != '/'
 					&& realTarget.location[realTarget.location.size() - 1] != '/')
 				realTarget.location += "/";
@@ -83,7 +83,7 @@ Route	Sockets::_getRealTarget(Request &req, const ConfigurationObject &currentCo
 					&& realTarget.location[realTarget.location.size() - 1] == '/')
 				dirListAdd.erase(dirListAdd.begin());
 			realTarget.location += dirListAdd;
-			std::cout << dirListAdd << std::endl;
+			//std::cout << dirListAdd << std::endl;
 		}
 	}
 	return (realTarget);
@@ -105,36 +105,38 @@ std::string Sockets::_getExtFile(const std::string &filename)
 {
 	std::string fileExtension;
 
-    // Get the position of the last dot in the filename
-    size_t dotPosition = filename.find_last_of('.');
+	// Get the position of the last dot in the filename
+	size_t dotPosition = filename.find_last_of('.');
 
-    if (dotPosition != std::string::npos) {
-        // Extract the file extension using substr() from the dot position
-        fileExtension = filename.substr(dotPosition);
-    } else {
-        fileExtension = ".txt";
-    }
+	if (dotPosition != std::string::npos) {
+		// Extract the file extension using substr() from the dot position
+		fileExtension = filename.substr(dotPosition);
+	} else {
+		fileExtension = "";
+	}
 	return (fileExtension);
 }
 
 std::string Sockets::_generateHTTPResponseHeader(const Route &target) {
-    std::ostringstream response;
+	std::ostringstream response;
 
-    // Status line: HTTP version, status code, and status message
-    response << "HTTP/1.1 " << this->oRequest.getErrorCode() << " "
+	// Status line: HTTP version, status code, and status message
+	response << "HTTP/1.1 " << this->oRequest.getErrorCode() << " "
 		<< DefaultErrorPages::statusMap[this->oRequest.getErrorCode()] << "\r\n";
 
 	std::string ext = this->_getExtFile(target.location);
-    // Headers
-    response << "Content-Type: " << DefaultErrorPages::getContentType(ext) << "\r\n";
-    response << "Content-Length: " << this->response.size() << "\r\n";
+	if (ext.empty())
+		ext = ".txt";
+	// Headers
+	response << "Content-Type: " << DefaultErrorPages::getContentType(ext) << "\r\n";
+	response << "Content-Length: " << this->response.size() << "\r\n";
 	response << "Server: webserv/0.1\r\n";
-    // Add other headers as needed
+	// Add other headers as needed
 
-    // Blank line indicating the end of the headers
-    response << "\r\n";
+	// Blank line indicating the end of the headers
+	response << "\r\n";
 
-    return response.str();
+	return response.str();
 }
 
 void	Sockets::_getRootFileDir(Route &target, bool isGet)
@@ -160,28 +162,32 @@ void	Sockets::_processGET(const ConfigurationObject &currentConfig)
 	Request	&req = this->oRequest;
 	//get realTarget(path) and check if directoryListing
 	Route	target = this->_getRealTarget(req, currentConfig);
-	
+
 	this->_checkMethodAuthorized(target, "GET");
 	this->_checkBodyEmpty();
 
 	this->response.clear();
 	//check if it's a directory and add root to location
 	this->_getRootFileDir(target, true);
-	
-	std::cout << "Current route: " << std::endl;
-	target.printRoute();
+
+	//std::cout << "Current route: " << std::endl;
+	//target.printRoute();
 
 
 	//check if it is a CGI
+	if (this->_isCGI(target))
+		this->_processCGI(target);
+	else
+	{
+		//get hold of content file
+		this->response = this->_readFile(target.location);
 
-	//get hold of content file
-	this->response = this->_readFile(target.location);
+		//generate proper header
+		this->response = this->_generateHTTPResponseHeader(target) + this->response;
 
-	//generate proper header
-	this->response = this->_generateHTTPResponseHeader(target) + this->response;
-
+	}
 	//this->response = DefaultErrorPages::generate( 418, "Test GET");
-	(void)req;
+	//(void)req;
 }
 
 void	Sockets::_processPOST(const ConfigurationObject &currentConfig)
@@ -191,15 +197,16 @@ void	Sockets::_processPOST(const ConfigurationObject &currentConfig)
 
 	this->_checkMethodAuthorized(target, "POST");
 	this->_checkBodySize(currentConfig);
-	
+
 	this->response.clear();
 	//check if it's a directory and add root to location
 	this->_getRootFileDir(target, false);
-	
+
 	//check if it is a CGI
-	
-	//deal wtih the post resquest
-	this->_processPOSTMethod(target);
+	if (this->_isCGI(target))
+		this->_processCGI(target);
+	else //deal wtih the post resquest
+		this->_processPOSTMethod(target);
 
 	//this->response = DefaultErrorPages::generate( 418, "Test POST");
 	(void)req;
@@ -219,11 +226,11 @@ static bool isRegularFile(const std::string& filename) {
 }
 
 void	Sockets::_removeFile(const std::string& filePath) {
-    // Check if file exists
-    if (!fileExists(filePath)) {
-        this->oRequest.setCodeMsg(404, "No ressource");
+	// Check if file exists
+	if (!fileExists(filePath)) {
+		this->oRequest.setCodeMsg(404, "No ressource");
 		throw Sockets::Error();
-    }
+	}
 
 	if (!isRegularFile(filePath)) {
 		//std::cerr << "Not a regular file: " << filename << std::endl;
@@ -231,20 +238,20 @@ void	Sockets::_removeFile(const std::string& filePath) {
 		throw Sockets::Error();
 	}
 
-    // Check permissions for the file
-    if (access(filePath.c_str(), W_OK) != 0) {
-        this->oRequest.setCodeMsg(403, "The program doesnt have the permission to open this file");
+	// Check permissions for the file
+	if (access(filePath.c_str(), W_OK) != 0) {
+		this->oRequest.setCodeMsg(403, "The program doesnt have the permission to open this file");
 		throw Sockets::Error();
-    }
+	}
 
-    // Attempt to delete the file
-    if (std::remove(filePath.c_str()) != 0) {
-        this->oRequest.setCodeMsg(500, "Error while removing the file");
+	// Attempt to delete the file
+	if (std::remove(filePath.c_str()) != 0) {
+		this->oRequest.setCodeMsg(500, "Error while removing the file");
 		throw Sockets::Error();
-    } else {
-        this->oRequest.setCodeMsg(200, "Ressource deleted successfuly");
+	} else {
+		this->oRequest.setCodeMsg(200, "Ressource deleted successfuly");
 		throw Sockets::Error();
-    }
+	}
 }
 
 void	Sockets::_processDELETE(const ConfigurationObject &currentConfig)
@@ -259,14 +266,15 @@ void	Sockets::_processDELETE(const ConfigurationObject &currentConfig)
 	//check if it's a directory and add root to location
 	this->_getRootFileDir(target, false);
 
-	std::cout << "Current route: " << std::endl;
-	target.printRoute();
+	//std::cout << "Current route: " << std::endl;
+	//target.printRoute();
 
 	//check if it is a CGI
+	if (this->_isCGI(target))
+		this->_processCGI(target);
+	else //process delete method
+		this->_removeFile(target.location);
 
-	//process delete method
-	this->_removeFile(target.location);
-	
 	//this->response = DefaultErrorPages::generate( 418, "Test DELETE");
 	(void)req;
 }
@@ -282,16 +290,27 @@ void	Sockets::_processMethod(const ConfigurationObject &currentConfig)
 		this->_processDELETE(currentConfig);
 }
 
-bool	Sockets::_isCGI(void)
+bool	Sockets::_isCGI(const Route &target)
 {
-	return (false);
+	if (target.cgiPath.empty() == false
+			&& target.cgiExtension.empty() == false)
+	{
+		std::string extTmp = this->_getExtFile(target.location);
+		//std::cout << "Extension file: " << extTmp << std::endl;
+		if (extTmp == target.cgiExtension)
+			return (true);
+		else
+			return (false);
+	}
+	else
+		return (false);
 }
 
-void	Sockets::_processCGI(void)
+void	Sockets::_processCGI(const Route &target)
 {
 	//execute CGI
 	//std::cout << "*****[CGI CALLED]******" << std::endl;
-	this->cgi.runCGI(this->oRequest);
+	this->cgi.runCGI(this->oRequest, target);
 	this->CGIrun = true;
 }
 
@@ -314,22 +333,18 @@ void	Sockets::process(void)
 	if (this->oRequest.getErrorCode())
 	{
 		this->response = DefaultErrorPages::generate(
-			this->oRequest.getErrorCode(), this->oRequest.getErrorMsg());
+				this->oRequest.getErrorCode(), this->oRequest.getErrorMsg());
 		return ;
 	}
 	//this->oRequest.printAttributes();
 	this->oRequest.setErrorCode(200);
-	
+
 	const ConfigurationObject &currentConfig = this->_getCurrentConfig();
 	//std::cout << "***Config found: " << std::endl;
 	//currentConfig.printParameters();
 	try
 	{
-		//before check if its a CGI call
-		if (this->_isCGI())
-			this->_processCGI();
-		else
-			this->_processMethod(currentConfig);
+		this->_processMethod(currentConfig);
 	}
 	catch(const std::exception& e)
 	{
@@ -342,12 +357,12 @@ void	Sockets::process(void)
 		if (this->response.empty())
 		{
 			this->response = DefaultErrorPages::generate(
-				this->oRequest.getErrorCode(), this->oRequest.getErrorMsg());
+					this->oRequest.getErrorCode(), this->oRequest.getErrorMsg());
 		}
 	}
 }
 
 const char* Sockets::Error::what() const throw()
 {
-		return ("Error");
+	return ("Error");
 }

@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/23 12:04:20 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/19 11:49:16 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/22 12:28:05 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef SOCKETS_HPP
@@ -74,8 +74,8 @@ class Sockets
 		void	_checkBodyEmpty(void);
 		void	_checkBodySize(const ConfigurationObject &currentConfig);
 
-		bool	_isCGI(void);
-		void	_processCGI(void);
+		bool	_isCGI(const Route &target);
+		void	_processCGI(const Route &target);
 
 		const ConfigurationObject	&_getCurrentConfig(void);
 		void						_checkMethodAuthorized(const Route &target,

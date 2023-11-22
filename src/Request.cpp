@@ -358,7 +358,7 @@ void	Request::_getHeaders(std::string &r)
 		return ;
 	this->_checkHost();
 	this->_body = r;
-	std::cout << "Body:\n" << this->_body << std::endl;
+	//std::cout << "Body:\n" << this->_body << std::endl;
 }
 
 Request::Request(std::string r): _port(80), _errorCode(0), _errorMsg("Error")

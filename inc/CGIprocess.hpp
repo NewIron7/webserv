@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 17:44:50 by hboissel          #+#    #+#             */
-/*   Updated: 2023/10/24 15:35:33 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/22 12:36:56 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef CGIPROCESS_HPP
@@ -25,6 +25,8 @@
 
 # include "Request.hpp"
 # include "InternalError.hpp"
+# include "Route.hpp"
+
 
 # define BUFFER_SIZE_CGI 64
 
@@ -49,12 +51,12 @@ class CGIprocess
 
 		std::string			response;
 		
-		void	runCGI(Request &req);
+		void	runCGI(Request &req, const Route &target);
 
 		void	addHeaders(void);
 
-		void	sendBody(void);
-		void	readResponse(void);
+		void	sendBody(Request &req);
+		void	readResponse(Request &req);
 
 		void	endCGI(bool err);
 
@@ -76,9 +78,9 @@ class CGIprocess
 		pid_t								_pid;
 		int									_exitStatus;
 
-		void	_setupEnv(Request &req);
-		void	_getEnvExec(void);
-		void	_createArgs(void);
+		void	_setupEnv(Request &req, const Route &target);
+		void	_getEnvExec(Request &req);
+		void	_createArgs(Request &req);
 
 		void	_clearAlloc(void);
 

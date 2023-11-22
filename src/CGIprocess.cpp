@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 18:01:04 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/15 07:58:36 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/22 12:53:08 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "CGIprocess.hpp"
@@ -65,7 +65,7 @@ void CGIprocess::printAllAttributes() {
 }
 
 
-CGIprocess::CGIprocess(void): done(false), c(true), error(0), _envExec(NULL), _exitStatus(0)
+CGIprocess::CGIprocess(void): done(false), c(true), error(0), _envExec(NULL), _args(NULL), _exitStatus(0)
 {
 
 }
@@ -73,16 +73,30 @@ CGIprocess::CGIprocess(void): done(false), c(true), error(0), _envExec(NULL), _e
 CGIprocess::~CGIprocess(void)
 {
 	//clear all for ctrl c
+	//std::cout << "cgi destructor" << std::endl;
+	if (!(this->done == false && this->c == true && this->error == 0 && this->_envExec == NULL && this->_exitStatus == 0))
+		this->endCGI(true);
 }
 
-void CGIprocess::_setupEnv(Request &req)
+static std::string getFilenameFromPath(const std::string& filePath) {
+    size_t found = filePath.find_last_of("/\\");
+    if (found != std::string::npos) {
+        return filePath.substr(found + 1);
+    }
+    // If no directory separator is found, return the entire path as the filename
+	return filePath;
+}
+
+void CGIprocess::_setupEnv(Request &req, const Route &target)
 {
 	//std::cout << "[CGI] Setup env" << std::endl;
 
 	//get scriptPath and cgi path
 	//this->_scriptPath = "/home/hboissel/webserv/cgi-bin/testGET.php";
-	this->_scriptPath = "/home/hboissel/webserv/cgi-bin/testPOST.php";
-	this->_cgiPath = "/home/hboissel/webserv/cgi-bin/php-cgi";
+	//this->_scriptPath = "/home/hboissel/webserv/cgi-bin/testPOST.php";
+	//this->_cgiPath = "/home/hboissel/webserv/cgi-bin/php-cgi";
+	this->_scriptPath = getFilenameFromPath(target.location);
+	this->_cgiPath = target.cgiPath;
 
 	this->_env["REDIRECT_STATUS"] = "200";
 	this->_env["REQUEST_METHOD"] = req.getMethod();
@@ -115,10 +129,17 @@ void CGIprocess::_setupEnv(Request &req)
 
 	this->_body = req.getBody();
 
-	this->_getEnvExec();
+	this->_getEnvExec(req);
 }
 
-void	CGIprocess::_getEnvExec(void)
+// static void printCharDoublePointer(char** strings) {
+//     for (int i = 0; strings[i] != NULL; ++i) {
+//         std::cerr << strings[i] << std::endl;
+//     }
+// 	std::cerr << std::endl;
+// }
+
+void	CGIprocess::_getEnvExec(Request &req)
 {
 	//std::cout << "[CGI] Setup exec env" << std::endl;
 
@@ -136,18 +157,20 @@ void	CGIprocess::_getEnvExec(void)
 			this->_envExec[j] = strcpy(this->_envExec[j], (const char*)element.c_str());
 			j++;
 		}
+		//throw std::bad_alloc();
 	}
 	catch (std::bad_alloc &e)
 	{
 		for (size_t i = 0; i < j; i++)
 			delete[] this->_envExec[i];
 		delete[] this->_envExec;
+		req.setCodeMsg(500, "Error alloc");
 		throw;
 	}
 	this->_envExec[j] = NULL;
 }
 
-void	CGIprocess::_createArgs(void)
+void	CGIprocess::_createArgs(Request &req)
 {
 	//std::cout << "[CGI] Creation args" << std::endl;
 
@@ -171,6 +194,7 @@ void	CGIprocess::_createArgs(void)
 			delete[] this->_args[0];
 		if (i >= 0)
 			delete[] this->_args;
+		req.setCodeMsg(500, "Error alloc");
 		throw;
 
 	}
@@ -179,24 +203,35 @@ void	CGIprocess::_createArgs(void)
 void	CGIprocess::_clearAlloc(void)
 {
 	//std::cout << "[CGI] clear alloc" << std::endl;
-
-	delete[] this->_args[0];
-	delete[] this->_args[1];
-	delete[] this->_args;
-
-	size_t	end = this->_env.size();
-	for (size_t i = 0; i <= end; i++)
-		delete[] this->_envExec[i];
-	delete[] this->_envExec;
+	if (this->_args)
+	{
+		delete[] this->_args[0];
+		delete[] this->_args[1];
+		delete[] this->_args;
+		this->_args = NULL;
+	}
+	
+	if (this->_envExec)
+	{
+		size_t	end = this->_env.size();
+		for (size_t i = 0; i <= end; i++)
+			delete[] this->_envExec[i];
+		delete[] this->_envExec;
+		this->_envExec = NULL;
+	}
+	
 }
 
 void	CGIprocess::endCGI(bool err)
 {
-	std::cout << "[CGI] end cgi" << std::endl;
+	//std::cout << "[CGI] end cgi" << std::endl;
 
 	//this->printAllAttributes();
 	if (err)
+	{
 		kill(this->_pid, 9);
+		this->_exitStatus = 1;
+	}
 	else
 	{
 		int status;
@@ -217,7 +252,7 @@ void	CGIprocess::endCGI(bool err)
 	close(this->fds[1]);
 	this->c = true;
 
-	std::cout << "close : " << this->fds[0] << " & " << this->fds[1] << std::endl;
+	//std::cout << "close : " << this->fds[0] << " & " << this->fds[1] << std::endl;
 
 	//this->fds[0] = -1;
 	//this->fds[1] = -1;
@@ -235,18 +270,27 @@ void	CGIprocess::endCGI(bool err)
 	this->done = false;
 }
 
-void	CGIprocess::runCGI(Request &req)
+std::string getFileDirectory(const std::string& filePath) {
+	size_t found = filePath.find_last_of("/\\");
+	if (found != std::string::npos) {
+		return filePath.substr(0, found);
+	}
+	return "."; // Or handle error as needed
+}
+
+void	CGIprocess::runCGI(Request &req, const Route &target)
 {
 	//std::cout << "[CGI] Run cgi" << std::endl;
 
 	this->c = false;
 
-	this->_setupEnv(req);
-	this->_createArgs();
+	this->_setupEnv(req, target);
+	this->_createArgs(req);
 
 	if (pipe(this->_inPipe) < -1)
 	{
 		this->_clearAlloc();
+		req.setCodeMsg(500, "Error while creating pipe for cgi");
 		throw InternalError();
 	}
 	if (pipe(this->_outPipe) < -1)
@@ -254,6 +298,7 @@ void	CGIprocess::runCGI(Request &req)
 		this->_clearAlloc();
 		close(this->_inPipe[0]);
 		close(this->_inPipe[1]);
+		req.setCodeMsg(500, "Error while creating pipe for cgi");
 		throw InternalError();
 	}
 	this->_pid = fork();
@@ -264,6 +309,7 @@ void	CGIprocess::runCGI(Request &req)
 		close(this->_outPipe[0]);
 		close(this->_outPipe[1]);
 		this->_clearAlloc();
+		req.setCodeMsg(500, "Error while launching cgi: on fork");
 		throw InternalError();
 	}
 	else if (this->_pid == 0)
@@ -274,11 +320,33 @@ void	CGIprocess::runCGI(Request &req)
 		close(this->_inPipe[1]);
 		close(this->_outPipe[0]);
 		close(this->_outPipe[1]);
-		this->_exitStatus = execve(this->_args[0], this->_args, this->_envExec);
-		exit(this->_exitStatus);
+		std::string targetDir = getFileDirectory(target.location);
+		if (chdir(targetDir.c_str()) == 0)
+		{
+			// Directory change successful
+			if (signal(SIGINT, SIG_DFL) == SIG_ERR)
+			{
+				this->_clearAlloc();
+				exit(1);
+			}
+			this->_exitStatus = execve(this->_args[0], this->_args, this->_envExec);
+			exit(this->_exitStatus);
+		}
+		else
+		{
+			// Error changing directory
+			this->_clearAlloc();
+			exit(1);
+		}
+
 	}
 	else
 	{
+		// std::cerr << "ARGS:\n";
+		// printCharDoublePointer(this->_args);
+		// std::cerr << "ENV:\n";
+		// printCharDoublePointer(this->_envExec);
+
 		close(this->_inPipe[0]);
 		close(this->_outPipe[1]);
 		this->fds[0] = this->_inPipe[1];
@@ -300,29 +368,30 @@ bool	CGIprocess::isError(void) const
 	return (false);
 }
 
-void	CGIprocess::sendBody(void)
+void	CGIprocess::sendBody(Request &req)
 {
-	std::cout << "Sending body to cgi =>" << std::endl;
-	std::cout << "\033[2m" << this->_body << "\033[0m" << std::endl;
+	//std::cout << "Sending body to cgi =>" << std::endl;
+	//std::cout << "\033[2m" << this->_body << "\033[0m" << std::endl;
 	int	err = write(this->fds[0], this->_body.c_str(), this->_body.size());
 	if (err == -1)
 	{
-		std::cout << "Error while sending body to cgi" << std::endl;
+		//std::cout << "Error while sending body to cgi" << std::endl;
+		req.setCodeMsg(500, "Error while sending body from cgi");
 		this->endCGI(true);
-		throw InternalError();
+		//throw InternalError();
 	}
 	else if (err < static_cast<int>(this->_body.size()))
 	{
-		std::cout << "Not the whole body sent" << std::endl;
+		//std::cout << "Not the whole body sent" << std::endl;
 	}
 	else
 	{
-		std::cout << "Body sent to cgi" << std::endl;
+		//std::cout << "Body sent to cgi" << std::endl;
 		this->step = 1;
 	}
 }
 
-void	CGIprocess::readResponse(void)
+void	CGIprocess::readResponse(Request &req)
 {
 	char	buf[BUFFER_SIZE_CGI + 1];
 	memset((void*)buf, 0, BUFFER_SIZE_CGI + 1);
@@ -331,13 +400,14 @@ void	CGIprocess::readResponse(void)
 	if (bytesRead == -1)
 	{
 		std::cout << "Error while reading response" << std::endl;
+		req.setCodeMsg(500, "Error while reading response from cgi");
 		this->endCGI(true);
-		throw InternalError();
+		//throw InternalError();
 	}
 	else
 	{
 		buf[bytesRead] = '\0';
 		this->response += buf;
-		std::cout << bytesRead << " bytes read on cgi" << std::endl;
+		//std::cout << bytesRead << " bytes read on cgi" << std::endl;
 	}
 }
