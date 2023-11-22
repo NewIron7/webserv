@@ -14,7 +14,7 @@
 static void	sig_handler(int sign)
 {
 	(void)sign;
-	throw InternalError();
+	throw EndProgram();
 }
 
 static void	init_signal(void)

@@ -309,7 +309,16 @@ void	TcpServer::run(void)
 		if (!evNb)
 			continue ;
 		for (int i = 0; i < evNb; i++)
-			this->_processEvent(evlist[i]);
+		{
+			try
+			{
+				this->_processEvent(evlist[i]);
+			}
+			catch(const std::exception& e)
+			{
+				std::cerr << "\033[41m" << e.what() << "\033[0m" << std::endl;;
+			}
+		}
 		this->_checkInactiveCGI(evlist, evNb);
 	}
 }
@@ -336,7 +345,10 @@ void	TcpServer::_add_client(const int &fdServer)
 
 	if (epoll_ctl(this->_epfd, EPOLL_CTL_ADD, client.socket,
 				&client.event) == -1)
+	{
+		this->_streams.erase(client.socket);
 		throw InternalError();
+	}
 }
 
 void	TcpServer::_add_cgi(Sockets &client, unsigned int nb)
@@ -363,11 +375,10 @@ void	TcpServer::_add_cgi(Sockets &client, unsigned int nb)
 
 	if (epoll_ctl(this->_epfd, EPOLL_CTL_ADD, cgi.fds[nb],
 				&cgi.event[nb]) == -1)
+	{
+		this->_CGIstreams.erase(cgi.fds[nb]);
 		throw InternalError();
-
-	//cgi.printAllAttributes();
-
-	//std::cout << "cgi.step " << cgi.step << std::endl;
+	}
 }
 
 void	TcpServer::_remove_cgi(Sockets &client, unsigned int nb)
@@ -391,9 +402,6 @@ void	TcpServer::_remove_cgi(Sockets &client, unsigned int nb)
 
 void	TcpServer::_remove_client(Sockets &client)
 {
-	if (epoll_ctl(this->_epfd, EPOLL_CTL_DEL, client.socket,
-				&client.event) == -1)
-		throw InternalError();
 	int	inFd = client.cgi.fds[0];
 	int	outFd = client.cgi.fds[1];
 
@@ -407,6 +415,13 @@ void	TcpServer::_remove_client(Sockets &client)
 	}
 	if (this->_streams.find(client.socket) != this->_streams.end())
 		this->_streams.erase(client.socket);
+	
+	if (epoll_ctl(this->_epfd, EPOLL_CTL_DEL, client.socket,
+				&client.event) == -1)
+	{
+		std::cerr << "Error while deleting client from epoll" << std::endl;
+		throw InternalError();
+	}
 }
 
 static void extractHostAndPort(const std::string& text, std::string& host, unsigned int& port) {
