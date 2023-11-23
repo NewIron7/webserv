@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>404 - Page Not Found</title>
+    <style>
+        /* General styles */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding-top: 100px;
+            background: linear-gradient(to top, violet, indigo, blue, green, yellow, orange, red);
+            background-size: 100% 10000%;
+            animation: rainbowBG 30s ease infinite;
+        }
+
+        h1 {
+            font-size: 4em;
+            margin-bottom: 0.5em;
+            color: #000000;
+            animation: blink 1s infinite;
+        }
+
+        p {
+            font-size: 1.2em;
+            color: white;
+        }
+
+        /* Blinking animation */
+        @keyframes blink {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        /* Rainbow background animation */
+        @keyframes rainbowBG {
+            0% {
+                background-position: 0 0%;
+            }
+
+            100% {
+                background-position: 0% 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Error 404</h1>
+    <p>The page <span style="color: #000000">you are looking for</span> could not be found.</p>
+    <img src="https://media3.giphy.com/media/xTiN0L7EW5trfOvEk0/giphy.gif" alt="Funny Meme">
+    <p>Return to <a href="/">Home</a></p>
+</body>
+
+</html>

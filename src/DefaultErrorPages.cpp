@@ -6,7 +6,7 @@
 /*   By: hboissel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/01 15:09:16 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/18 06:16:34 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/23 10:19:01 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "DefaultErrorPages.hpp"
@@ -20,150 +20,150 @@ std::map<std::string, std::string> DefaultErrorPages::initContentTypeMap(void)
 {
 	std::map<std::string, std::string> contentTypeMap;
 
-    // Common MIME types and file extensions
-    contentTypeMap[".aac"] = "audio/aac";
-    contentTypeMap[".abw"] = "application/x-abiword";
-    contentTypeMap[".arc"] = "application/octet-stream";
-    contentTypeMap[".avi"] = "video/x-msvideo";
-    contentTypeMap[".azw"] = "application/vnd.amazon.ebook";
-    contentTypeMap[".bin"] = "application/octet-stream";
-    contentTypeMap[".bz"] = "application/x-bzip";
-    contentTypeMap[".bz2"] = "application/x-bzip2";
-    contentTypeMap[".csh"] = "application/x-csh";
-    contentTypeMap[".css"] = "text/css";
-    contentTypeMap[".csv"] = "text/csv";
-    contentTypeMap[".doc"] = "application/msword";
-    contentTypeMap[".docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-    contentTypeMap[".eot"] = "application/vnd.ms-fontobject";
-    contentTypeMap[".epub"] = "application/epub+zip";
-    contentTypeMap[".gif"] = "image/gif";
-    contentTypeMap[".htm"] = "text/html";
-    contentTypeMap[".html"] = "text/html";
-    contentTypeMap[".ico"] = "image/x-icon";
-    contentTypeMap[".ics"] = "text/calendar";
-    contentTypeMap[".jar"] = "application/java-archive";
-    contentTypeMap[".jpeg"] = "image/jpeg";
-    contentTypeMap[".jpg"] = "image/jpeg";
-    contentTypeMap[".js"] = "text/javascript";
-    contentTypeMap[".json"] = "application/json";
-    contentTypeMap[".jsonld"] = "application/ld+json";
-    contentTypeMap[".mid"] = "audio/midi";
-    contentTypeMap[".midi"] = "audio/midi";
-    contentTypeMap[".mpeg"] = "video/mpeg";
-    contentTypeMap[".mpkg"] = "application/vnd.apple.installer+xml";
-    contentTypeMap[".odp"] = "application/vnd.oasis.opendocument.presentation";
-    contentTypeMap[".ods"] = "application/vnd.oasis.opendocument.spreadsheet";
-    contentTypeMap[".odt"] = "application/vnd.oasis.opendocument.text";
-    contentTypeMap[".oga"] = "audio/ogg";
-    contentTypeMap[".ogv"] = "video/ogg";
-    contentTypeMap[".ogx"] = "application/ogg";
-    contentTypeMap[".otf"] = "font/otf";
-    contentTypeMap[".png"] = "image/png";
-    contentTypeMap[".pdf"] = "application/pdf";
-    contentTypeMap[".ppt"] = "application/vnd.ms-powerpoint";
-    contentTypeMap[".pptx"] = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
-    contentTypeMap[".rar"] = "application/x-rar-compressed";
-    contentTypeMap[".rtf"] = "application/rtf";
-    contentTypeMap[".sh"] = "application/x-sh";
-    contentTypeMap[".svg"] = "image/svg+xml";
-    contentTypeMap[".swf"] = "application/x-shockwave-flash";
-    contentTypeMap[".tar"] = "application/x-tar";
-    contentTypeMap[".tif"] = "image/tiff";
-    contentTypeMap[".tiff"] = "image/tiff";
-    contentTypeMap[".ttf"] = "font/ttf";
-    contentTypeMap[".txt"] = "text/plain";
-    contentTypeMap[".vsd"] = "application/vnd.visio";
-    contentTypeMap[".wav"] = "audio/wav";
-    contentTypeMap[".weba"] = "audio/webm";
-    contentTypeMap[".webm"] = "video/webm";
-    contentTypeMap[".webp"] = "image/webp";
-    contentTypeMap[".woff"] = "font/woff";
-    contentTypeMap[".woff2"] = "font/woff2";
-    contentTypeMap[".xhtml"] = "application/xhtml+xml";
-    contentTypeMap[".xls"] = "application/vnd.ms-excel";
-    contentTypeMap[".xlsx"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-    contentTypeMap[".xml"] = "application/xml";
-    contentTypeMap[".xul"] = "application/vnd.mozilla.xul+xml";
-    contentTypeMap[".zip"] = "application/zip";
-    contentTypeMap[".3gp"] = "video/3gpp";
-    contentTypeMap[".3g2"] = "video/3gpp2";
-    contentTypeMap[".7z"] = "application/x-7z-compressed";
+	// Common MIME types and file extensions
+	contentTypeMap[".aac"] = "audio/aac";
+	contentTypeMap[".abw"] = "application/x-abiword";
+	contentTypeMap[".arc"] = "application/octet-stream";
+	contentTypeMap[".avi"] = "video/x-msvideo";
+	contentTypeMap[".azw"] = "application/vnd.amazon.ebook";
+	contentTypeMap[".bin"] = "application/octet-stream";
+	contentTypeMap[".bz"] = "application/x-bzip";
+	contentTypeMap[".bz2"] = "application/x-bzip2";
+	contentTypeMap[".csh"] = "application/x-csh";
+	contentTypeMap[".css"] = "text/css";
+	contentTypeMap[".csv"] = "text/csv";
+	contentTypeMap[".doc"] = "application/msword";
+	contentTypeMap[".docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+	contentTypeMap[".eot"] = "application/vnd.ms-fontobject";
+	contentTypeMap[".epub"] = "application/epub+zip";
+	contentTypeMap[".gif"] = "image/gif";
+	contentTypeMap[".htm"] = "text/html";
+	contentTypeMap[".html"] = "text/html";
+	contentTypeMap[".ico"] = "image/x-icon";
+	contentTypeMap[".ics"] = "text/calendar";
+	contentTypeMap[".jar"] = "application/java-archive";
+	contentTypeMap[".jpeg"] = "image/jpeg";
+	contentTypeMap[".jpg"] = "image/jpeg";
+	contentTypeMap[".js"] = "text/javascript";
+	contentTypeMap[".json"] = "application/json";
+	contentTypeMap[".jsonld"] = "application/ld+json";
+	contentTypeMap[".mid"] = "audio/midi";
+	contentTypeMap[".midi"] = "audio/midi";
+	contentTypeMap[".mpeg"] = "video/mpeg";
+	contentTypeMap[".mpkg"] = "application/vnd.apple.installer+xml";
+	contentTypeMap[".odp"] = "application/vnd.oasis.opendocument.presentation";
+	contentTypeMap[".ods"] = "application/vnd.oasis.opendocument.spreadsheet";
+	contentTypeMap[".odt"] = "application/vnd.oasis.opendocument.text";
+	contentTypeMap[".oga"] = "audio/ogg";
+	contentTypeMap[".ogv"] = "video/ogg";
+	contentTypeMap[".ogx"] = "application/ogg";
+	contentTypeMap[".otf"] = "font/otf";
+	contentTypeMap[".png"] = "image/png";
+	contentTypeMap[".pdf"] = "application/pdf";
+	contentTypeMap[".ppt"] = "application/vnd.ms-powerpoint";
+	contentTypeMap[".pptx"] = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+	contentTypeMap[".rar"] = "application/x-rar-compressed";
+	contentTypeMap[".rtf"] = "application/rtf";
+	contentTypeMap[".sh"] = "application/x-sh";
+	contentTypeMap[".svg"] = "image/svg+xml";
+	contentTypeMap[".swf"] = "application/x-shockwave-flash";
+	contentTypeMap[".tar"] = "application/x-tar";
+	contentTypeMap[".tif"] = "image/tiff";
+	contentTypeMap[".tiff"] = "image/tiff";
+	contentTypeMap[".ttf"] = "font/ttf";
+	contentTypeMap[".txt"] = "text/plain";
+	contentTypeMap[".vsd"] = "application/vnd.visio";
+	contentTypeMap[".wav"] = "audio/wav";
+	contentTypeMap[".weba"] = "audio/webm";
+	contentTypeMap[".webm"] = "video/webm";
+	contentTypeMap[".webp"] = "image/webp";
+	contentTypeMap[".woff"] = "font/woff";
+	contentTypeMap[".woff2"] = "font/woff2";
+	contentTypeMap[".xhtml"] = "application/xhtml+xml";
+	contentTypeMap[".xls"] = "application/vnd.ms-excel";
+	contentTypeMap[".xlsx"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+	contentTypeMap[".xml"] = "application/xml";
+	contentTypeMap[".xul"] = "application/vnd.mozilla.xul+xml";
+	contentTypeMap[".zip"] = "application/zip";
+	contentTypeMap[".3gp"] = "video/3gpp";
+	contentTypeMap[".3g2"] = "video/3gpp2";
+	contentTypeMap[".7z"] = "application/x-7z-compressed";
 
-    return contentTypeMap;
+	return contentTypeMap;
 }
 
 std::map<unsigned int, std::string> DefaultErrorPages::initStatusMap(void)
 {
 	std::map<unsigned int, std::string> statusMap;
 
-    statusMap[100] = "Continue";
-    statusMap[101] = "Switching Protocols";
-    statusMap[102] = "Processing";
-    statusMap[103] = "Early Hints";
+	statusMap[100] = "Continue";
+	statusMap[101] = "Switching Protocols";
+	statusMap[102] = "Processing";
+	statusMap[103] = "Early Hints";
 
-    statusMap[200] = "OK";
-    statusMap[201] = "Created";
-    statusMap[202] = "Accepted";
-    statusMap[203] = "Non-Authoritative Information";
-    statusMap[204] = "No Content";
-    statusMap[205] = "Reset Content";
-    statusMap[206] = "Partial Content";
-    statusMap[207] = "Multi-Status";
-    statusMap[208] = "Already Reported";
-    statusMap[226] = "IM Used";
+	statusMap[200] = "OK";
+	statusMap[201] = "Created";
+	statusMap[202] = "Accepted";
+	statusMap[203] = "Non-Authoritative Information";
+	statusMap[204] = "No Content";
+	statusMap[205] = "Reset Content";
+	statusMap[206] = "Partial Content";
+	statusMap[207] = "Multi-Status";
+	statusMap[208] = "Already Reported";
+	statusMap[226] = "IM Used";
 
-    statusMap[300] = "Multiple Choices";
-    statusMap[301] = "Moved Permanently";
-    statusMap[302] = "Found";
-    statusMap[303] = "See Other";
-    statusMap[304] = "Not Modified";
-    statusMap[305] = "Use Proxy";
-    statusMap[307] = "Temporary Redirect";
-    statusMap[308] = "Permanent Redirect";
+	statusMap[300] = "Multiple Choices";
+	statusMap[301] = "Moved Permanently";
+	statusMap[302] = "Found";
+	statusMap[303] = "See Other";
+	statusMap[304] = "Not Modified";
+	statusMap[305] = "Use Proxy";
+	statusMap[307] = "Temporary Redirect";
+	statusMap[308] = "Permanent Redirect";
 
-    statusMap[400] = "Bad Request";
-    statusMap[401] = "Unauthorized";
-    statusMap[402] = "Payment Required";
-    statusMap[403] = "Forbidden";
-    statusMap[404] = "Not Found";
-    statusMap[405] = "Method Not Allowed";
-    statusMap[406] = "Not Acceptable";
-    statusMap[407] = "Proxy Authentication Required";
-    statusMap[408] = "Request Timeout";
-    statusMap[409] = "Conflict";
-    statusMap[410] = "Gone";
-    statusMap[411] = "Length Required";
-    statusMap[412] = "Precondition Failed";
-    statusMap[413] = "Payload Too Large";
-    statusMap[414] = "URI Too Long";
-    statusMap[415] = "Unsupported Media Type";
-    statusMap[416] = "Range Not Satisfiable";
-    statusMap[417] = "Expectation Failed";
-    statusMap[418] = "I'm a teapot";
-    statusMap[421] = "Misdirected Request";
-    statusMap[422] = "Unprocessable Entity";
-    statusMap[423] = "Locked";
-    statusMap[424] = "Failed Dependency";
-    statusMap[425] = "Too Early";
-    statusMap[426] = "Upgrade Required";
-    statusMap[428] = "Precondition Required";
-    statusMap[429] = "Too Many Requests";
-    statusMap[431] = "Request Header Fields Too Large";
-    statusMap[451] = "Unavailable For Legal Reasons";
+	statusMap[400] = "Bad Request";
+	statusMap[401] = "Unauthorized";
+	statusMap[402] = "Payment Required";
+	statusMap[403] = "Forbidden";
+	statusMap[404] = "Not Found";
+	statusMap[405] = "Method Not Allowed";
+	statusMap[406] = "Not Acceptable";
+	statusMap[407] = "Proxy Authentication Required";
+	statusMap[408] = "Request Timeout";
+	statusMap[409] = "Conflict";
+	statusMap[410] = "Gone";
+	statusMap[411] = "Length Required";
+	statusMap[412] = "Precondition Failed";
+	statusMap[413] = "Payload Too Large";
+	statusMap[414] = "URI Too Long";
+	statusMap[415] = "Unsupported Media Type";
+	statusMap[416] = "Range Not Satisfiable";
+	statusMap[417] = "Expectation Failed";
+	statusMap[418] = "I'm a teapot";
+	statusMap[421] = "Misdirected Request";
+	statusMap[422] = "Unprocessable Entity";
+	statusMap[423] = "Locked";
+	statusMap[424] = "Failed Dependency";
+	statusMap[425] = "Too Early";
+	statusMap[426] = "Upgrade Required";
+	statusMap[428] = "Precondition Required";
+	statusMap[429] = "Too Many Requests";
+	statusMap[431] = "Request Header Fields Too Large";
+	statusMap[451] = "Unavailable For Legal Reasons";
 
-    statusMap[500] = "Internal Server Error";
-    statusMap[501] = "Not Implemented";
-    statusMap[502] = "Bad Gateway";
-    statusMap[503] = "Service Unavailable";
-    statusMap[504] = "Gateway Timeout";
-    statusMap[505] = "HTTP Version Not Supported";
-    statusMap[506] = "Variant Also Negotiates";
-    statusMap[507] = "Insufficient Storage";
-    statusMap[508] = "Loop Detected";
-    statusMap[510] = "Not Extended";
-    statusMap[511] = "Network Authentication Required";
+	statusMap[500] = "Internal Server Error";
+	statusMap[501] = "Not Implemented";
+	statusMap[502] = "Bad Gateway";
+	statusMap[503] = "Service Unavailable";
+	statusMap[504] = "Gateway Timeout";
+	statusMap[505] = "HTTP Version Not Supported";
+	statusMap[506] = "Variant Also Negotiates";
+	statusMap[507] = "Insufficient Storage";
+	statusMap[508] = "Loop Detected";
+	statusMap[510] = "Not Extended";
+	statusMap[511] = "Network Authentication Required";
 
-    return statusMap;
+	return statusMap;
 }
 
 const std::string &DefaultErrorPages::getContentType(const std::string &ext)
@@ -174,6 +174,14 @@ const std::string &DefaultErrorPages::getContentType(const std::string &ext)
 		return (DefaultErrorPages::contentTypeMap[".txt"]);
 	}
 
+}
+
+std::string DefaultErrorPages::addHeader(std::string code, std::string &name, std::string &gen)
+{
+	std::string headers = "HTTP/1.1 " + code + " " + name + "\r\n";
+	headers += "Content-Type: text/html\r\nContent-Length: "
+		+ SSTR(gen.length()) + "\r\n\r\n";
+	return (headers + gen);
 }
 
 std::string	DefaultErrorPages::genByCode(std::string code, std::string name, std::string details)
@@ -191,11 +199,49 @@ std::string	DefaultErrorPages::genByCode(std::string code, std::string name, std
 	gen	+= "class=\"container\"><h1>";
 	gen += code + " - " + name;
 	gen += "</h1><p>" + details + "</p></div></body></html>";
-	
-	std::string headers = "HTTP/1.1 " + code + " " + name + "\r\n";
-	headers += "Content-Type: text/html\r\nContent-Length: "
-		+ SSTR(gen.length()) + "\r\n\r\n";
-	return (headers + gen);
+
+
+	return (addHeader(code, name, gen));
+}
+
+static std::string readFileContent(const std::string& filePath) {
+	std::ifstream file(filePath.c_str());
+	if (!file.is_open()) {
+		throw std::runtime_error("Unable to open file");
+	}
+
+	try {
+		std::ostringstream contentStream;
+		contentStream << file.rdbuf();
+		file.close();
+		return contentStream.str();
+	} catch (const std::exception& e) {
+		file.close();
+		throw std::runtime_error("Error reading file content: " + std::string(e.what()));
+	}
+}
+
+const std::string	DefaultErrorPages::generate(unsigned int code,
+		std::string details, const ConfigurationObject &currentConfig)
+{
+	try
+	{
+		const std::string &path = currentConfig.getErrorPage(code);
+		try {
+			std::string fileContent = readFileContent(path);
+			return (DefaultErrorPages::addHeader(SSTR(code), statusMap[code], fileContent));
+		} catch (const std::exception& e) {
+			std::cerr << e.what() << std::endl;
+			std::cerr << "[err] Cannot open file "
+				<< path << ". Default error page used instead" << std::endl;
+			return (generate(code, details));
+		}
+	}
+	catch(const std::exception& e)
+	{
+		return (generate(code, details));
+	}
+
 }
 
 const std::string	DefaultErrorPages::generate(unsigned int code, std::string details)
@@ -216,7 +262,7 @@ const std::string	DefaultErrorPages::generate(unsigned int code, std::string det
 		case 201:
 			page = genByCode("201", "Created", details);
 			break;
-		// 4xx Client Errors
+			// 4xx Client Errors
 		case 400:
 			page = genByCode("400", "Bad Request", details);
 			break;

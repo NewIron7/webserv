@@ -14,16 +14,22 @@
 
 # include <sstream>
 
+# include "ConfigurationObject.hpp"
+
 #define SSTR( x ) static_cast< std::ostringstream & >( \
 		( std::ostringstream() << std::dec << x ) ).str()
 
 # include <string>
 # include <map>
+# include <fstream>
 
 class DefaultErrorPages
 {
 	public:
-		static const std::string	generate(unsigned int code, std::string details);
+		static const std::string	generate(unsigned int code,
+			std::string details);
+		static const std::string	generate(unsigned int code,
+			std::string details, const ConfigurationObject &currentConfig);
 
 		static const std::string &getContentType(const std::string &ext);
 
@@ -33,6 +39,8 @@ class DefaultErrorPages
 	private:
 		static std::string	genByCode(std::string code,
 			std::string name, std::string details);
+		static std::string addHeader(std::string code,
+			std::string &name, std::string &gen);
 
 		static std::map<unsigned int, std::string> initStatusMap(void);
 		static std::map<std::string, std::string> initContentTypeMap(void);

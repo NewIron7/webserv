@@ -357,7 +357,7 @@ void	Sockets::process(void)
 		if (this->response.empty())
 		{
 			this->response = DefaultErrorPages::generate(
-					this->oRequest.getErrorCode(), this->oRequest.getErrorMsg());
+					this->oRequest.getErrorCode(), this->oRequest.getErrorMsg(), currentConfig);
 		}
 	}
 }

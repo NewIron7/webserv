@@ -413,15 +413,19 @@ void	TcpServer::_remove_client(Sockets &client)
 	{
 		this->_remove_cgi(client, 1);
 	}
-	if (this->_streams.find(client.socket) != this->_streams.end())
-		this->_streams.erase(client.socket);
 	
 	if (epoll_ctl(this->_epfd, EPOLL_CTL_DEL, client.socket,
 				&client.event) == -1)
 	{
+		if (this->_streams.find(client.socket) != this->_streams.end())
+			this->_streams.erase(client.socket);
+
 		std::cerr << "Error while deleting client from epoll" << std::endl;
 		throw InternalError();
 	}
+
+	if (this->_streams.find(client.socket) != this->_streams.end())
+		this->_streams.erase(client.socket);
 }
 
 static void extractHostAndPort(const std::string& text, std::string& host, unsigned int& port) {

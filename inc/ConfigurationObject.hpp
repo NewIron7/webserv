@@ -36,6 +36,8 @@ class ConfigurationObject
 
 		std::map<std::string, Route>		routes;
 
+		const std::string					&getErrorPage(const unsigned int &code) const;
+
 		void printParameters() const;
 	private:
 };
