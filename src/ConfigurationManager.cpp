@@ -38,7 +38,8 @@ static std::string intToString(unsigned int number) {
 ConfigurationManager::ConfigurationManager(const std::string &filename) {
 	if (!loadConfigFile(filename)) {
 		// Handle error, maybe throw an exception or set default values
-		std::cerr << "Error with configuration file: " << filename << std::endl;
+		//std::cerr << "Error with configuration file: " << filename << std::endl;
+		throw ConfigurationManager::ErrorUserConfig();
 	}
 	this->checkJson();
 	//this->printConfig();

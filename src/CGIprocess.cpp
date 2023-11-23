@@ -255,11 +255,6 @@ void	CGIprocess::endCGI(bool err)
 	close(this->fds[1]);
 	this->c = true;
 
-	//std::cout << "close : " << this->fds[0] << " & " << this->fds[1] << std::endl;
-
-	//this->fds[0] = -1;
-	//this->fds[1] = -1;
-
 	this->_inPipe[0] = -1;
 	this->_inPipe[1] = -1;
 	this->_outPipe[0] = -1;
@@ -345,11 +340,6 @@ void	CGIprocess::runCGI(Request &req, const Route &target)
 	}
 	else
 	{
-		// std::cerr << "ARGS:\n";
-		// printCharDoublePointer(this->_args);
-		// std::cerr << "ENV:\n";
-		// printCharDoublePointer(this->_envExec);
-
 		close(this->_inPipe[0]);
 		close(this->_outPipe[1]);
 		this->fds[0] = this->_inPipe[1];
@@ -359,8 +349,6 @@ void	CGIprocess::runCGI(Request &req, const Route &target)
 			this->step = 1;
 		else
 			this->step = 0;
-		//std::cout << "STEP= " << this->step << std::endl;
-		//std::cout << "[CGI] CGI launched !" << std::endl;
 	}
 }
 
@@ -405,7 +393,6 @@ void	CGIprocess::readResponse(Request &req)
 		std::cout << "Error while reading response" << std::endl;
 		req.setCodeMsg(500, "Error while reading response from cgi");
 		this->endCGI(true);
-		//throw InternalError();
 	}
 	else
 	{
