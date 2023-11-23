@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 
+# import time
+
+# # Wait for 3 seconds
+# time.sleep(3)
+
 # Set the content type to HTML
-print("Content-type: text/html\r\n\r\n")
+print("Content-type: text/html\n\r\n\r")
 
 # Start HTML content
 print("<!DOCTYPE html>")
