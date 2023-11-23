@@ -24,21 +24,6 @@ TcpServer::~TcpServer(void)
 	return ;
 }
 
-void TcpServer::_printCGIstreams() {
-	std::cout << "Contents of _CGIstreams:" << std::endl;
-	std::map<int, Sockets*>::iterator it;
-	for (it = _CGIstreams.begin(); it != _CGIstreams.end(); ++it) {
-		std::cout << "Key: " << it->first << std::endl;
-		//Sockets* socketPtr = it->second;
-		//if (socketPtr != NULL) {
-		//	socketPtr->printAttributes(); // Assuming the Sockets class has a printAttributes method
-		//} else {
-		//	std::cout << "Value is NULL" << std::endl;
-		//}
-	}
-}
-
-
 void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
 {
 	if (this->_CGIstreams.find(ev.data.fd) != this->_CGIstreams.end())
@@ -123,7 +108,7 @@ void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
 
 void	TcpServer::_processEPOLLIN(struct epoll_event &ev)
 {
-	//std::cout << "[] EPOLLIN event" << std::endl;
+	// std::cout << "[] EPOLLIN event" << std::endl;
 	if ((this->_streams.find(ev.data.fd) != this->_streams.end())
 			&& this->_streams[ev.data.fd].main)
 	{
@@ -134,10 +119,12 @@ void	TcpServer::_processEPOLLIN(struct epoll_event &ev)
 	}
 	else if (this->_CGIstreams.find(ev.data.fd) != this->_CGIstreams.end())
 	{
+		//std::cout << "[] CGI EPOLLIN event" << std::endl;
 		Sockets	*client = this->_CGIstreams[ev.data.fd];
 		CGIprocess	&cgi = client->cgi;
 
 		cgi.readResponse(client->oRequest);
+		std::cout << cgi.response << std::endl;
 	}
 	else
 	{
@@ -239,6 +226,9 @@ void	TcpServer::_processEvent(struct epoll_event &ev)
 	//std::cout << "[] event is ";
 	//std::cout << std::hex << ev.events << std::dec << " from fd [ " << ev.data.fd << " ]"
 	//	<< std::endl;
+	if ((ev.events & EPOLLHUP) == EPOLLHUP
+			|| (ev.events & EPOLLRDHUP) == EPOLLRDHUP)
+		this->_processEPOLLHUP(ev);
 	if ((ev.events & EPOLLERR) == EPOLLERR)
 		this->_processEPOLLERR(ev);
 	else if ((ev.events & EPOLLIN) == EPOLLIN
@@ -248,52 +238,6 @@ void	TcpServer::_processEvent(struct epoll_event &ev)
 		this->_processEPOLLOUT(ev);
 	else
 		std::cout << "Event not handle yet by the program" << std::endl;
-}
-
-void	TcpServer::_checkInactiveCGI(struct epoll_event *evlist, int evNb)
-{
-	std::map<int, Sockets*>::iterator it;
-	for (it = this->_CGIstreams.begin(); it != this->_CGIstreams.end(); ++it)
-	{
-		Sockets* client = it->second;
-		CGIprocess	&cgi = client->cgi;
-
-		if (client->CGIrun == false)
-			continue ;
-
-		if ((cgi.step == 1) && (cgi.response.empty() == false))
-		{
-			bool active = false;
-			for (int i = 0; i < evNb; i++)
-			{
-				int fd = evlist[i].data.fd;
-				if (fd == cgi.fds[1])
-				{
-					active = true;
-					break ;
-				}
-			}
-			if (active == false)
-			{
-				//std::cout << "Killing process unactive" << std::endl;
-				cgi.done = true;
-				cgi.addHeaders();
-				client->response = cgi.response;
-
-				this->_remove_cgi(*client, 0);
-				this->_remove_cgi(*client, 1);
-
-				cgi.endCGI(false);
-				client->CGIrun = false;
-				client->resGen = true;
-
-				std::cout << "\033[35m[] Response ->\033[0m" << std::endl;
-				std::cout << "\033[2m" << client->response << "\033[0m" << std::endl;
-
-				break ;
-			}
-		}
-	}
 }
 
 void	TcpServer::run(void)
@@ -318,11 +262,7 @@ void	TcpServer::run(void)
 		{
 			try
 			{
-				if ((evlist[i].events & EPOLLHUP) == EPOLLHUP
-					|| (evlist[i].events & EPOLLRDHUP) == EPOLLRDHUP)
-					epollHupEvents.push_back(&evlist[i]);
-				else
-					this->_processEvent(evlist[i]);
+				this->_processEvent(evlist[i]);
 			}
 			catch(const std::exception& e)
 			{
@@ -343,10 +283,6 @@ void	TcpServer::run(void)
 				}
 			}
 		}
-		for (std::vector<struct epoll_event *>::iterator it = epollHupEvents.begin();
-			it != epollHupEvents.end(); ++it)
-			this->_processEPOLLHUP(**it);
-		//this->_checkInactiveCGI(evlist, evNb);
 	}
 }
 

@@ -28,7 +28,7 @@
 # include "Route.hpp"
 
 
-# define BUFFER_SIZE_CGI 64
+# define BUFFER_SIZE_CGI 4096
 
 class CGIprocess
 {

@@ -398,6 +398,6 @@ void	CGIprocess::readResponse(Request &req)
 	{
 		buf[bytesRead] = '\0';
 		this->response += buf;
-		//std::cout << bytesRead << " bytes read on cgi" << std::endl;
+		std::cout << bytesRead << " bytes read on cgi" << std::endl;
 	}
 }

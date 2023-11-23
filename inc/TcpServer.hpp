@@ -15,7 +15,7 @@
 # define MAXIREQ 64
 # define TEVENT 30000
 # define MAXEVENT 16
-# define BUFFER_SIZE 64
+# define BUFFER_SIZE 4096
 
 # include <iostream>
 # include <map>
@@ -60,10 +60,6 @@ class TcpServer
 		void	_processEPOLLOUT(struct epoll_event &ev);		
 		void	_processEPOLLERR(struct epoll_event &ev);
 		void	_processEPOLLHUP(struct epoll_event &ev);
-
-		void	_checkInactiveCGI(struct epoll_event *evlist, int evNb);
-
-		void	_printCGIstreams(void);
 
 		void	_createServer(std::string host, unsigned int port,
 				const std::vector<ConfigurationObject> &config);
