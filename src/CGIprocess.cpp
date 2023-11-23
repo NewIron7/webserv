@@ -20,8 +20,7 @@ size_t	CGIprocess::_getBodyLength(void)
 	{
 		if (tmp.compare(res) == 0)
 		{
-			this->error = 500;
-			return (0);
+			return (res.size());
 		}
 		res.erase(0, tmp.size() + 2);
 		tmp = res.substr(0, res.find("\r\n"));
@@ -35,12 +34,16 @@ void	CGIprocess::addHeaders(void)
 	if (this->response.empty())
 		return ;
 	size_t	l = this->_getBodyLength();
-	if (this->error)
-		return ;
+	if (l == this->response.size() || l == (this->response.size() - 2))
+	{
+		std::string ct = "Content-Type: text/plain\r\n";
+		if (l == this->response.size())
+			ct += "\r\n";		
+		this->response.insert(0, ct);
+	}
 	std::string	cl = "Content-Length: " + SSTR(l);
 	cl += "\r\n";
 	this->response.insert(0, cl);
-
 	if (this->response.find("HTTP/1.1") == std::string::npos)
 		this->response.insert(0, "HTTP/1.1 200 OK\r\n");
 }
