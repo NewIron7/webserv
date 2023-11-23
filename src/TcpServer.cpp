@@ -33,10 +33,16 @@ void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
 
 		if (cgi.step == 0)
 		{
-			//std::cout << "[CGI] EPOLLOUT event" << std::endl;
 			cgi.sendBody(client->oRequest);
-			this->_remove_cgi(*client, 0);
-			this->_add_cgi(*client, 1);
+			if (client->oRequest.getErrorCode() == 500)
+			{
+				this->_endCGI(client);
+			}
+			else
+			{
+				this->_remove_cgi(*client, 0);
+				this->_add_cgi(*client, 1);
+			}
 		}
 
 		return ;
@@ -44,23 +50,9 @@ void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
 
 	Sockets	&client = this->_streams[ev.data.fd];
 
-	//std::cout << "[] EPOLLOUT event" << std::endl;
 
-	if (client.resSent)
-	{
-		//std::cout << "\033[33m[-] Response already sent\033[0m" << std::endl;
+	if (client.resSent || client.reqGot == false || client.CGIrun)
 		return ;
-	}
-	if (client.reqGot == false)
-	{
-		//std::cout << "[-] No request to process" << std::endl;
-		return ;
-	}
-
-	if (client.CGIrun)
-	{
-		return ;
-	}
 
 	if (client.resGen == false)
 	{
@@ -71,7 +63,6 @@ void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
 		client.process();
 		if (client.CGIrun)
 		{
-			//std::cout << "CGI step: " << client.cgi.step << std::endl;
 			if (client.cgi.step)
 				this->_add_cgi(client, 1);
 			else
@@ -90,14 +81,9 @@ void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
 
 	int	err = write(client.socket, client.response.c_str(),
 			client.response.size());
-	if (err == -1)
+	if (err == -1 && (err == 0 && client.response.empty() == false))
 	{
 		std::cout << "\033[35m[#] Failed to sent response\033[0m" << std::endl;
-	}
-	else if (err < static_cast<int>(client.response.size()))
-	{
-		std::cout << "\033[35m[#] Failed to sent response\033[0m" << std::endl;
-		//we can do something when write didnt succeed to send the whole response
 	}
 	else
 	{
@@ -108,7 +94,6 @@ void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
 
 void	TcpServer::_processEPOLLIN(struct epoll_event &ev)
 {
-	// std::cout << "[] EPOLLIN event" << std::endl;
 	if ((this->_streams.find(ev.data.fd) != this->_streams.end())
 			&& this->_streams[ev.data.fd].main)
 	{
@@ -119,18 +104,19 @@ void	TcpServer::_processEPOLLIN(struct epoll_event &ev)
 	}
 	else if (this->_CGIstreams.find(ev.data.fd) != this->_CGIstreams.end())
 	{
-		//std::cout << "[] CGI EPOLLIN event" << std::endl;
 		Sockets	*client = this->_CGIstreams[ev.data.fd];
 		CGIprocess	&cgi = client->cgi;
 
 		cgi.readResponse(client->oRequest);
-		std::cout << cgi.response << std::endl;
+		if (client->oRequest.getErrorCode() == 500)
+		{
+			this->_endCGI(client);
+		}
 	}
 	else
 	{
 		Sockets	&client = this->_streams[ev.data.fd];
 
-		//client.printAttributes();
 		char	buf[BUFFER_SIZE];
 		memset((void*)buf, 0, BUFFER_SIZE);
 
@@ -142,11 +128,7 @@ void	TcpServer::_processEPOLLIN(struct epoll_event &ev)
 		}
 		else
 		{
-			//buf[bytesRead] = '\0';
-			//std::cout << buf << std::endl;
 			client.request.insert(client.request.size(), buf, bytesRead);
-			//client.request += buf;
-			//std::cout << client.request.size() << std::endl;
 			std::cout << "\033[36m[+] " << bytesRead << " bytes read\033[0m" << std::endl;
 			client.reqGot = true;
 			client.resGen = false;
@@ -155,43 +137,9 @@ void	TcpServer::_processEPOLLIN(struct epoll_event &ev)
 	}
 }
 
-void	TcpServer::_processEPOLLERR(struct epoll_event &ev)
+void	TcpServer::_endCGI(Sockets *client)
 {
-	std::cout << "[] EPOLLERR event" << std::endl;
-	if (this->_streams.find(ev.data.fd) != this->_streams.end())
-	{
-		Sockets &client = this->_streams[ev.data.fd];
-		this->_remove_client(client);
-	}
-	else
-	{
-		Sockets *client = this->_CGIstreams[ev.data.fd];
 		CGIprocess &cgi = client->cgi;
-
-		client->CGIrun = false;
-		this->_remove_cgi(*client, 0);
-		this->_remove_cgi(*client, 1);
-		cgi.endCGI(true);
-	}
-}
-
-void	TcpServer::_processEPOLLHUP(struct epoll_event &ev)
-{
-	//std::cout << "[" << ev.data.fd << "] EPOLLHUP event" << std::endl;
-	if (this->_streams.find(ev.data.fd) != this->_streams.end())
-	{
-		Sockets &client = this->_streams[ev.data.fd];
-		std::cout << "\033[31m[-] [ " << client.socket << " ] disconnected\033[0m"
-			<< std::endl;
-		this->_remove_client(client);
-	}
-	else if (this->_CGIstreams.find(ev.data.fd) != this->_CGIstreams.end())
-	{
-		std::cout << "CGI epollhup" << std::endl;
-		Sockets *client = this->_CGIstreams[ev.data.fd];
-		CGIprocess &cgi = client->cgi;
-
-		//cgi.printAllAttributes();
 
 		if (cgi.isError())
 		{
@@ -214,22 +162,47 @@ void	TcpServer::_processEPOLLHUP(struct epoll_event &ev)
 
 		std::cout << "\033[35m[] Response ->\033[0m" << std::endl;
 		std::cout << "\033[2m" << client->response << "\033[0m" << std::endl;
+}
 
+void	TcpServer::_processEPOLLERR(struct epoll_event &ev)
+{
+	if (this->_streams.find(ev.data.fd) != this->_streams.end())
+	{
+		Sockets &client = this->_streams[ev.data.fd];
+		std::cout << "\033[31m[-] [ "
+			<< client.socket << " ] error threrefore got disconnected\033[0m"
+			<< std::endl;
+		this->_remove_client(client);
+	}
+	else
+	{
+		Sockets *client = this->_CGIstreams[ev.data.fd];
+		this->_endCGI(client);
+	}
+}
 
+void	TcpServer::_processEPOLLHUP(struct epoll_event &ev)
+{
+	if (this->_streams.find(ev.data.fd) != this->_streams.end())
+	{
+		Sockets &client = this->_streams[ev.data.fd];
+		std::cout << "\033[31m[-] [ " << client.socket << " ] disconnected\033[0m"
+			<< std::endl;
+		this->_remove_client(client);
+	}
+	else if (this->_CGIstreams.find(ev.data.fd) != this->_CGIstreams.end())
+	{
+		Sockets *client = this->_CGIstreams[ev.data.fd];
+		this->_endCGI(client);
 	}
 }
 
 void	TcpServer::_processEvent(struct epoll_event &ev)
 {
-	//std::cout << "\033[4m@Processing of an event from fd [ " << ev.data.fd << " ]\033[0m"
-	//	<< std::endl;	
-	//std::cout << "[] event is ";
-	//std::cout << std::hex << ev.events << std::dec << " from fd [ " << ev.data.fd << " ]"
-	//	<< std::endl;
 	if ((ev.events & EPOLLHUP) == EPOLLHUP
 			|| (ev.events & EPOLLRDHUP) == EPOLLRDHUP)
 		this->_processEPOLLHUP(ev);
-	if ((ev.events & EPOLLERR) == EPOLLERR)
+	else if ((ev.events & EPOLLERR) == EPOLLERR)
 		this->_processEPOLLERR(ev);
 	else if ((ev.events & EPOLLIN) == EPOLLIN
 			|| (ev.events & EPOLLPRI) == EPOLLPRI)
@@ -237,7 +210,9 @@ void	TcpServer::_processEvent(struct epoll_event &ev)
 	else if ((ev.events & EPOLLOUT) == EPOLLOUT)
 		this->_processEPOLLOUT(ev);
 	else
+	{
 		std::cout << "Event not handle yet by the program" << std::endl;
+	}
 }
 
 void	TcpServer::run(void)
@@ -250,14 +225,11 @@ void	TcpServer::run(void)
 		evNb = 0;
 		memset((void*)evlist, 0, sizeof(evlist));
 
-		//std::cout << "\033[1m@Waiting for events\033[0m" << std::endl;
 		evNb = epoll_wait(this->_epfd, evlist, MAXEVENT, TEVENT);
-		//std::cout << "[] evNb: " << evNb << std::endl;
 		if (evNb == -1)
 			throw InternalError();
 		if (!evNb)
 			continue ;
-		std::vector<struct epoll_event *> epollHupEvents;
 		for (int i = 0; i < evNb; i++)
 		{
 			try
@@ -316,7 +288,6 @@ void	TcpServer::_add_client(const int &fdServer)
 
 void	TcpServer::_add_cgi(Sockets &client, unsigned int nb)
 {
-	//std::cout << "[Server] Adding new CGI" << std::endl;
 	CGIprocess	&cgi = client.cgi;
 
 	cgi.size = sizeof(cgi.info);
@@ -351,9 +322,7 @@ void	TcpServer::_remove_cgi(Sockets &client, unsigned int nb)
 	if (this->_CGIstreams.find(cgi.fds[nb]) == this->_CGIstreams.end())
 		return ;
 
-	//this->_printCGIstreams();
 	this->_CGIstreams.erase(cgi.fds[nb]);
-	//this->_printCGIstreams();
 
 	if ((cgi.c == false) && (epoll_ctl(this->_epfd, EPOLL_CTL_DEL, cgi.fds[nb],
 					&cgi.event[nb]) == -1))
@@ -401,12 +370,7 @@ static void extractHostAndPort(const std::string& text, std::string& host, unsig
 		std::stringstream ss(portStr);
 		ss >> port;
     } else {
-        // Error handling if the format is incorrect
-        // For example, when the ':' character is not found
-        // Handle the error according to your requirements
-        // For instance, you might throw an exception or set default values.
         std::cerr << "Invalid format: Cannot extract host and port from input text." << std::endl;
-        // Set default values for host and port or handle the error accordingly
     }
 }
 

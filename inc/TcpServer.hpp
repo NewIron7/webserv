@@ -54,6 +54,7 @@ class TcpServer
 		
 		void	_add_cgi(Sockets &client, unsigned int nb);
 		void	_remove_cgi(Sockets &client, unsigned int nb);
+		void	_endCGI(Sockets *client);
 		
 		void	_processEvent(struct epoll_event &ev);
 		void	_processEPOLLIN(struct epoll_event &ev);		
