@@ -59,7 +59,7 @@ Sockets::~Sockets(void)
 {
 	if (this->socket != -1)
 	{
-		std::cout << "@Socket of fd [ " << this->socket << " ] closed" << std::endl;
+		//std::cout << "@Socket of fd [ " << this->socket << " ] closed" << std::endl;
 		close(this->socket);
 	}
 	return ;

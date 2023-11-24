@@ -346,6 +346,10 @@ void	Sockets::process(void)
 	{
 		this->_processMethod(currentConfig);
 	}
+	catch(const ErrorCGI& e)
+	{
+		throw;
+	}
 	catch(const std::exception& e)
 	{
 		this->response.clear();

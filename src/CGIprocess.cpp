@@ -174,30 +174,34 @@ void	CGIprocess::_clearAlloc(void)
 
 void	CGIprocess::endCGI(bool err)
 {
-	if (err)
+	if (this->_pid)
 	{
-		kill(this->_pid, 9);
-		this->_exitStatus = 1;
-	}
-	else
-	{
-		int status;
-
-		int w = waitpid(this->_pid, &status, WNOHANG);
-		if (w == -1)
-		{
-			if (errno != ECHILD)
-				kill(this->_pid, 9);
-		}
-		else if (w == 0)
+		if (err)
 		{
 			kill(this->_pid, 9);
+			this->_exitStatus = 1;
 		}
-	}
+		else
+		{
+			int status;
 
-	close(this->fds[0]);
-	close(this->fds[1]);
-	this->c = true;
+			int w = waitpid(this->_pid, &status, WNOHANG);
+			if (w == -1)
+			{
+				if (errno != ECHILD)
+					kill(this->_pid, 9);
+			}
+			else if (w == 0)
+			{
+				kill(this->_pid, 9);
+			}
+		}
+		close(this->fds[0]);
+		close(this->fds[1]);
+		this->c = true;
+	}
+	
+	
 
 	this->_inPipe[0] = -1;
 	this->_inPipe[1] = -1;
@@ -266,19 +270,16 @@ void	CGIprocess::runCGI(Request &req, const Route &target)
 			// Directory change successful
 			if (signal(SIGINT, SIG_DFL) == SIG_ERR)
 			{
-				this->_clearAlloc();
-				exit(1);
+				throw ErrorCGI();
 			}
 			this->_exitStatus = execve(this->_args[0], this->_args, this->_envExec);
-			exit(this->_exitStatus);
+			throw ErrorCGI();
 		}
 		else
 		{
 			// Error changing directory
-			this->_clearAlloc();
-			exit(1);
+			throw ErrorCGI();
 		}
-
 	}
 	else
 	{
@@ -321,6 +322,7 @@ void	CGIprocess::readResponse(Request &req)
 	int bytesRead = read(this->fds[1], buf, BUFFER_SIZE_CGI);
 	if (bytesRead == -1 || bytesRead == 0)
 	{
+		std::cerr << "rien a lire" << std::endl;
 		req.setCodeMsg(500, "Error while reading response from cgi");
 		this->endCGI(true);
 	}

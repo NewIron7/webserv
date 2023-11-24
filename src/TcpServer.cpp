@@ -143,6 +143,8 @@ void	TcpServer::_endCGI(Sockets *client)
 
 		if (cgi.isError())
 		{
+			if (cgi.response.empty())
+				client->oRequest.setErrorMsg("Error with cgi");
 			client->response = DefaultErrorPages::generate(500,
 				client->oRequest.getErrorMsg());
 		}
@@ -235,6 +237,10 @@ void	TcpServer::run(void)
 			try
 			{
 				this->_processEvent(evlist[i]);
+			}
+			catch(const ErrorCGI& e)
+			{
+				throw;
 			}
 			catch(const std::exception& e)
 			{

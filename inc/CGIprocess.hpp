@@ -22,10 +22,12 @@
 # include <csignal>
 # include <sys/types.h>
 # include <sys/wait.h>
+# include <unistd.h>
 
 # include "Request.hpp"
 # include "InternalError.hpp"
 # include "Route.hpp"
+# include "ErrorCGI.hpp"
 
 
 # define BUFFER_SIZE_CGI 4096

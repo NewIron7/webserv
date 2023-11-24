@@ -43,6 +43,10 @@ int	main(int argc, char **argv)
 		test.create();
 		test.run();
 	}
+	catch(const ErrorCGI& e)
+	{
+		return (1);
+	}
 	catch(const std::exception& e)
 	{
 		std::cerr << "\033[41m" << e.what() << "\033[0m" << std::endl;;

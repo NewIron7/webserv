@@ -26,7 +26,7 @@ INCS_DIR    = inc/
 SRCS_FILES    = main.cpp TcpServer.cpp Sockets.cpp InternalError.cpp DefaultErrorPages.cpp\
 				Request.cpp Sockets_process.cpp CGIprocess.cpp ConfigurationManager.cpp\
 				JsonValue.cpp ConfigurationObject.cpp Route.cpp Sockets_readFile.cpp\
-				Sockets_post.cpp Sockets_redirection.cpp EndProgram.cpp
+				Sockets_post.cpp Sockets_redirection.cpp EndProgram.cpp ErrorCGI.cpp
 OBJS_FILES    = $(SRCS_FILES:.cpp=.o)
 DEPS_FILES    = $(SRCS_FILES:.cpp=.d)
 
