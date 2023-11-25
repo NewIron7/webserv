@@ -54,6 +54,7 @@ void	TcpServer::_add_cgi(Sockets &client, unsigned int nb)
 				&cgi.event[nb]) == -1)
 	{
 		this->_CGIstreams.erase(cgi.fds[nb]);
+        std::cout << "Error while addind cgi to epoll" << std::endl;
 		throw InternalError();
 	}
 }

@@ -30,7 +30,7 @@ SRCS_FILES    = main.cpp TcpServer.cpp Sockets.cpp InternalError.cpp DefaultErro
 				TcpServer_epollEvent.cpp TcpServer_cgi.cpp \
 				ConfigurationManager_exceptions.cpp ConfigurationManager_parseJson.cpp\
 				ConfigurationManager_check.cpp ConfigurationManager_get.cpp\
-				ConfigurationManager_print.cpp
+				ConfigurationManager_print.cpp ErrorFdCGI.cpp
 
 OBJS_FILES    = $(SRCS_FILES:.cpp=.o)
 DEPS_FILES    = $(SRCS_FILES:.cpp=.d)

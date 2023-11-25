@@ -27,6 +27,7 @@
 # include "InternalError.hpp"
 # include "Route.hpp"
 # include "ErrorCGI.hpp"
+# include "ErrorFdCGI.hpp"
 
 
 # define BUFFER_SIZE_CGI 4096

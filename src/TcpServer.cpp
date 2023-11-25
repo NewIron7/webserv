@@ -36,7 +36,11 @@ void	TcpServer::run(void)
 
 		evNb = epoll_wait(this->_epfd, evlist, MAXEVENT, TEVENT);
 		if (evNb == -1)
+		{
+			std::cerr << "ERROR epoll_wait" << std::endl;
 			throw InternalError();
+		}
+			
 		if (!evNb)
 			continue ;
 		for (int i = 0; i < evNb; i++)
@@ -49,22 +53,28 @@ void	TcpServer::run(void)
 			{
 				throw;
 			}
+			catch(const InternalError& e)
+			{
+				//std::cerr << e.what() << std::endl;
+				if (this->_streams.find(evlist[i].data.fd) != this->_streams.end())
+				{
+					Sockets &client = this->_streams[evlist[i].data.fd];
+					if (client.CGIrun == true)
+					{
+						client.cgi.endCGI(true);
+					}
+					throw;
+				}
+			}
 			catch(const std::exception& e)
 			{
 				std::cerr << "\033[41m" << e.what() << "\033[0m" << std::endl;
 				if (this->_streams.find(evlist[i].data.fd) != this->_streams.end())
 				{
 					Sockets &client = this->_streams[evlist[i].data.fd];
-					client.reqGot = false;
-					client.resGen = false;
-					client.resSent = false;
-					if (client.CGIrun == true)
-					{
-						client.cgi.endCGI(true);
-					}
-					client.CGIrun = false;
-					client.request.clear();
-					client.response.clear();
+					this->_endCGI(&client);
+					client.response = DefaultErrorPages::generate(500,
+						client.oRequest.getErrorMsg());
 				}
 			}
 		}
@@ -83,6 +93,7 @@ void	TcpServer::_add_client(const int &fdServer)
 	{
 		if ((errno == EAGAIN) || (errno == EWOULDBLOCK))
 			return ;
+		std::cerr << "Error while accepting client" << std::endl;
 		throw InternalError();
 	}
 
@@ -94,6 +105,7 @@ void	TcpServer::_add_client(const int &fdServer)
 	if (epoll_ctl(this->_epfd, EPOLL_CTL_ADD, client.socket,
 				&client.event) == -1)
 	{
+		std::cout << "Error while addind client to epoll" << std::endl;
 		this->_streams.erase(client.socket);
 		throw InternalError();
 	}

@@ -52,7 +52,7 @@ Sockets::Sockets(void):
 	this->event.events |= EPOLLRDHUP;
 	this->event.events |= EPOLLPRI;
 
-	this->response = DefaultErrorPages::generate(418, "Hello World!");
+	this->response = "";
 }
 
 Sockets::~Sockets(void)

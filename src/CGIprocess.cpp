@@ -48,7 +48,7 @@ void	CGIprocess::addHeaders(void)
 }
 
 CGIprocess::CGIprocess(void): done(false), c(true), error(0),
-	_envExec(NULL), _args(NULL), _exitStatus(0) 
+	_envExec(NULL), _args(NULL), _pid(0), _exitStatus(0)
 {}
 
 CGIprocess::~CGIprocess(void)
@@ -242,7 +242,7 @@ void	CGIprocess::runCGI(Request &req, const Route &target)
 	{
 		this->_clearAlloc();
 		req.setCodeMsg(500, "Error while creating pipe for cgi");
-		throw InternalError();
+		throw ErrorFdCGI();
 	}
 	if (pipe(this->_outPipe) < -1)
 	{
@@ -250,11 +250,12 @@ void	CGIprocess::runCGI(Request &req, const Route &target)
 		close(this->_inPipe[0]);
 		close(this->_inPipe[1]);
 		req.setCodeMsg(500, "Error while creating pipe for cgi");
-		throw InternalError();
+		throw ErrorFdCGI();
 	}
 	this->_pid = fork();
 	if (this->_pid == -1)
 	{
+		std::cerr << "ERROR on fork" << std::endl;
 		close(this->_inPipe[0]);
 		close(this->_inPipe[1]);
 		close(this->_outPipe[0]);
@@ -330,7 +331,6 @@ void	CGIprocess::readResponse(Request &req)
 	int bytesRead = read(this->fds[1], buf, BUFFER_SIZE_CGI);
 	if (bytesRead == -1 || bytesRead == 0)
 	{
-		std::cerr << "rien a lire" << std::endl;
 		req.setCodeMsg(500, "Error while reading response from cgi");
 		this->endCGI(true);
 	}

@@ -170,10 +170,6 @@ void	Sockets::_processGET(const ConfigurationObject &currentConfig)
 	//check if it's a directory and add root to location
 	this->_getRootFileDir(target, true);
 
-	//std::cout << "Current route: " << std::endl;
-	//target.printRoute();
-
-
 	//check if it is a CGI
 	if (this->_isCGI(target))
 		this->_processCGI(target);
@@ -181,13 +177,9 @@ void	Sockets::_processGET(const ConfigurationObject &currentConfig)
 	{
 		//get hold of content file
 		this->response = this->_readFile(target.location);
-
 		//generate proper header
 		this->response = this->_generateHTTPResponseHeader(target) + this->response;
-
 	}
-	//this->response = DefaultErrorPages::generate( 418, "Test GET");
-	//(void)req;
 }
 
 void	Sockets::_processPOST(const ConfigurationObject &currentConfig)
@@ -207,9 +199,6 @@ void	Sockets::_processPOST(const ConfigurationObject &currentConfig)
 		this->_processCGI(target);
 	else //deal wtih the post resquest
 		this->_processPOSTMethod(target);
-
-	//this->response = DefaultErrorPages::generate( 418, "Test POST");
-	(void)req;
 }
 
 static bool fileExists(const std::string& filename) {
@@ -263,20 +252,15 @@ void	Sockets::_processDELETE(const ConfigurationObject &currentConfig)
 	this->_checkBodyEmpty();
 
 	this->response.clear();
+
 	//check if it's a directory and add root to location
 	this->_getRootFileDir(target, false);
-
-	//std::cout << "Current route: " << std::endl;
-	//target.printRoute();
 
 	//check if it is a CGI
 	if (this->_isCGI(target))
 		this->_processCGI(target);
 	else //process delete method
 		this->_removeFile(target.location);
-
-	//this->response = DefaultErrorPages::generate( 418, "Test DELETE");
-	(void)req;
 }
 
 
@@ -296,7 +280,6 @@ bool	Sockets::_isCGI(const Route &target)
 			&& target.cgiExtension.empty() == false)
 	{
 		std::string extTmp = this->_getExtFile(target.location);
-		//std::cout << "Extension file: " << extTmp << std::endl;
 		if (extTmp == target.cgiExtension)
 			return (true);
 		else
@@ -308,8 +291,6 @@ bool	Sockets::_isCGI(const Route &target)
 
 void	Sockets::_processCGI(const Route &target)
 {
-	//execute CGI
-	//std::cout << "*****[CGI CALLED]******" << std::endl;
 	this->cgi.runCGI(this->oRequest, target);
 	this->CGIrun = true;
 }
@@ -350,10 +331,23 @@ void	Sockets::process(void)
 	{
 		throw;
 	}
+	catch(const std::bad_alloc& e)
+	{
+		std::cerr << "\033[41m" << e.what() << "\033[0m" << std::endl;;
+		this->response = DefaultErrorPages::generate(
+					500, "Memory error", currentConfig);
+	}
+	catch(const ErrorFdCGI& e)
+	{
+		std::cerr << "\033[41m" << e.what() << "\033[0m" << std::endl;;
+		this->response = DefaultErrorPages::generate(
+					500, "FD error", currentConfig);
+	}
 	catch(const std::exception& e)
 	{
+		std::cerr << "\033[41m" << e.what() << "\033[0m" << std::endl;;
 		this->response.clear();
-		//implement redirection if 404 error
+
 		if (this->oRequest.getErrorCode() == 404)
 		{
 			this->_processRedirection(currentConfig);

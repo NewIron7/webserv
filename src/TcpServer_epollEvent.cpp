@@ -17,7 +17,16 @@ void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
 			else
 			{
 				this->_remove_cgi(*client, 0);
-				this->_add_cgi(*client, 1);
+                try
+                {
+                    this->_add_cgi(*client, 1);
+                }
+                catch(const std::exception& e)
+                {
+                    this->_endCGI(client);
+                }
+                
+				
 			}
 		}
 
@@ -39,10 +48,17 @@ void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
 		client.process();
 		if (client.CGIrun)
 		{
-			if (client.cgi.step)
-				this->_add_cgi(client, 1);
-			else
-				this->_add_cgi(client, 0);
+            try
+            {
+                if (client.cgi.step)
+				    this->_add_cgi(client, 1);
+                else
+                    this->_add_cgi(client, 0);
+            }
+            catch(const std::exception& e)
+            {
+                this->_endCGI(&client);
+            }
 			return ;
 		}
 
@@ -74,9 +90,16 @@ void	TcpServer::_processEPOLLIN(struct epoll_event &ev)
 			&& this->_streams[ev.data.fd].main)
 	{
 		Sockets &server = this->_streams[ev.data.fd];
-		std::cout << "\033[32;1m[+] New connection from port " << server.port
-			<< " on server [ " << server.socket << " ]\033[0m" << std::endl;
-		this->_add_client(server.socket);
+        try
+        {
+            this->_add_client(server.socket);
+            std::cout << "\033[32;1m[+] New connection from port " << server.port
+			    << " on server [ " << server.socket << " ]\033[0m" << std::endl;
+        }
+        catch(const std::exception& e)
+        {
+            throw;
+        }
 	}
 	else if (this->_CGIstreams.find(ev.data.fd) != this->_CGIstreams.end())
 	{
