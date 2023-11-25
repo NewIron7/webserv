@@ -11,6 +11,21 @@
 /* ************************************************************************** */
 #include "CGIprocess.hpp"
 
+CGIprocess::CGIprocess(void): done(false), c(true), step(0), error(0),
+	_envExec(NULL), _args(NULL), _pid(0), _exitStatus(0)
+{
+	this->fds[1] = -1;
+	this->fds[0] = -1;
+}
+
+CGIprocess::~CGIprocess(void)
+{
+	if (!(this->done == false && this->c == true
+				&& this->error == 0 && this->_envExec == NULL
+				&& this->_exitStatus == 0))
+		this->endCGI(true);
+}
+
 size_t	CGIprocess::_getBodyLength(void)
 {
 	std::string	res = this->response;
@@ -45,21 +60,6 @@ void	CGIprocess::addHeaders(void)
 	this->response.insert(0, cl);
 	if (this->response.find("HTTP/1.1") == std::string::npos)
 		this->response.insert(0, "HTTP/1.1 200 OK\r\n");
-}
-
-CGIprocess::CGIprocess(void): done(false), c(true), error(0),
-	_envExec(NULL), _args(NULL), _pid(0), _exitStatus(0)
-{
-	this->fds[1] = -1;
-	this->fds[0] = -1;
-}
-
-CGIprocess::~CGIprocess(void)
-{
-	if (!(this->done == false && this->c == true
-				&& this->error == 0 && this->_envExec == NULL
-				&& this->_exitStatus == 0))
-		this->endCGI(true);
 }
 
 static std::string getFilenameFromPath(const std::string& filePath) {
@@ -309,7 +309,9 @@ void	CGIprocess::runCGI(Request &req, const Route &target)
 
 bool	CGIprocess::isError(void) const
 {
-	if (this->_exitStatus || this->step == 0 || this->response.empty())
+	if (this->_exitStatus
+		|| this->step == 0
+		|| this->response.empty())
 		return (true);
 	return (false);
 }

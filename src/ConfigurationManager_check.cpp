@@ -39,7 +39,7 @@ void	ConfigurationManager::_checkGetContentServer(
 {
 	if (it->first.empty())
 	{
-		std::cout << "Empty field /!\\" << std::endl;
+		std::cerr << "Empty field /!\\" << std::endl;
 		throw ConfigurationManager::ErrorUserConfig();
 	}
 	else if (it->first == "host")

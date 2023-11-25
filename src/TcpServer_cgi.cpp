@@ -25,8 +25,8 @@ void	TcpServer::_endCGI(Sockets *client)
 		client->CGIrun = false;
 		client->resGen = true;
 
-		std::cout << "\033[35m[] Response ->\033[0m" << std::endl;
-		std::cout << "\033[2m" << client->response << "\033[0m" << std::endl;
+		//std::cout << "\033[35m[] Response ->\033[0m" << std::endl;
+		//std::cout << "\033[2m" << client->response << "\033[0m" << std::endl;
 }
 
 void	TcpServer::_add_cgi(Sockets &client, unsigned int nb)

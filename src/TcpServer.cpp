@@ -55,7 +55,6 @@ void	TcpServer::run(void)
 			}
 			catch(const InternalError& e)
 			{
-				//std::cerr << e.what() << std::endl;
 				if (this->_streams.find(evlist[i].data.fd) != this->_streams.end())
 				{
 					Sockets &client = this->_streams[evlist[i].data.fd];
@@ -68,7 +67,7 @@ void	TcpServer::run(void)
 			}
 			catch(const std::exception& e)
 			{
-				std::cerr << "\033[41m" << e.what() << "\033[0m" << std::endl;
+				//std::cerr << "\033[41m" << e.what() << "\033[0m" << std::endl;
 				if (this->_streams.find(evlist[i].data.fd) != this->_streams.end())
 				{
 					Sockets &client = this->_streams[evlist[i].data.fd];

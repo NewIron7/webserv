@@ -41,9 +41,9 @@ void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
 
         if (client.resGen == false)
         {
-            std::cout << "\033[35m[] Request ->\033[0m" << std::endl;
-            std::cout << "\033[2m" << client.request << "\033[0m" << std::endl;
-            std::cout << "\033[33m[+] Generating response\033[0m" << std::endl;
+            //std::cout << "\033[35m[] Request ->\033[0m" << std::endl;
+            // std::cout << "\033[2m" << client.request << "\033[0m" << std::endl;
+            // std::cout << "\033[33m[+] Generating response\033[0m" << std::endl;
 
             client.process();
             if (client.CGIrun)
@@ -65,8 +65,8 @@ void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
             client.resGen = true;
             client.request.clear();
 
-            std::cout << "\033[35m[] Response ->\033[0m" << std::endl;
-            std::cout << "\033[2m" << client.response << "\033[0m" << std::endl;
+            // std::cout << "\033[35m[] Response ->\033[0m" << std::endl;
+            // std::cout << "\033[2m" << client.response << "\033[0m" << std::endl;
         }
         else
             client.request.clear();
@@ -75,12 +75,12 @@ void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
                 client.response.size());
         if (err == -1 && (err == 0 && client.response.empty() == false))
         {
-            std::cout << "\033[35m[#] Failed to sent response\033[0m" << std::endl;
+            std::cerr << "\033[35m[#] Failed to sent response\033[0m" << std::endl;
         }
         else
         {
             client.resSent = true;
-            std::cout << "\033[32m[+] Response succesfully sent to client\033[0m" << std::endl;
+            //std::cout << "\033[32m[+] Response succesfully sent to client\033[0m" << std::endl;
         }
     }
 }
@@ -124,12 +124,12 @@ void	TcpServer::_processEPOLLIN(struct epoll_event &ev)
 		if (bytesRead == -1)
 		{
 			client.reqGot = false;
-			std::cout << "[#] Failed to read request" << std::endl;
+			std::cerr << "[#] Failed to read request" << std::endl;
 		}
 		else
 		{
 			client.request.insert(client.request.size(), buf, bytesRead);
-			std::cout << "\033[36m[+] " << bytesRead << " bytes read\033[0m" << std::endl;
+			//std::cout << "\033[36m[+] " << bytesRead << " bytes read\033[0m" << std::endl;
 			client.reqGot = true;
 			client.resGen = false;
 			client.resSent = false;
@@ -198,8 +198,4 @@ void	TcpServer::_processEvent(struct epoll_event &ev)
 		this->_processEPOLLIN(ev);
 	else if ((ev.events & EPOLLOUT) == EPOLLOUT)
 		this->_processEPOLLOUT(ev);
-	else
-	{
-		std::cout << "Event not handle yet by the program" << std::endl;
-	}
 }

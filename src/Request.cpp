@@ -249,14 +249,12 @@ void	Request::_checkContentLength(std::string &r)
 				"Body empty while Transfer-Encoding header set");
 		else
 		{
-			std::cout << "Transfer-encoding" << std::endl;
 			toUpperString(this->_headers[te]);
 			std::string value = this->_headers[te];
 			if (value.find("CHUNKED") == std::string::npos)
 				this->setCodeMsg(411, "Content lenght is needed");
 			else
 			{
-				std::cout << "Chunked request:\n";
 				this->_processChunkedBody(r);
 			}
 		}

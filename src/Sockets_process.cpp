@@ -345,7 +345,6 @@ void	Sockets::process(void)
 	}
 	catch(const std::exception& e)
 	{
-		std::cerr << "\033[41m" << e.what() << "\033[0m" << std::endl;;
 		this->response.clear();
 
 		if (this->oRequest.getErrorCode() == 404)
