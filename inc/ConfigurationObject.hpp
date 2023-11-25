@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/13 11:21:04 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/15 06:57:36 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/25 09:00:31 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef CONFIGURATIONOBJECT_HPP
@@ -36,7 +36,7 @@ class ConfigurationObject
 
 		std::map<std::string, Route>		routes;
 
-		const std::string					&getErrorPage(const unsigned int &code) const;
+		const std::string	&getErrorPage(const unsigned int &code) const;
 
 		void printParameters() const;
 	private:

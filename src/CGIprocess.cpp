@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/09 18:01:04 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/22 12:53:08 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/25 09:04:08 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "CGIprocess.hpp"
@@ -53,7 +53,9 @@ CGIprocess::CGIprocess(void): done(false), c(true), error(0),
 
 CGIprocess::~CGIprocess(void)
 {
-	if (!(this->done == false && this->c == true && this->error == 0 && this->_envExec == NULL && this->_exitStatus == 0))
+	if (!(this->done == false && this->c == true
+				&& this->error == 0 && this->_envExec == NULL
+				&& this->_exitStatus == 0))
 		this->endCGI(true);
 }
 
@@ -62,7 +64,8 @@ static std::string getFilenameFromPath(const std::string& filePath) {
     if (found != std::string::npos) {
         return filePath.substr(found + 1);
     }
-    // If no directory separator is found, return the entire path as the filename
+    // If no directory separator is found,
+	// return the entire path as the filename
 	return filePath;
 }
 
@@ -103,12 +106,13 @@ void	CGIprocess::_getEnvExec(Request &req)
 	{
 		this->_envExec = new char*[this->_env.size() + 1];
 
-		for (std::map<std::string, std::string>::const_iterator it = this->_env.begin();
-				it != this->_env.end(); it++)
+		for (std::map<std::string, std::string>::const_iterator
+				it = this->_env.begin(); it != this->_env.end(); it++)
 		{
 			std::string	element = it->first + "=" + it->second;
 			this->_envExec[j] = new char[element.size() + 1];
-			this->_envExec[j] = strcpy(this->_envExec[j], (const char*)element.c_str());
+			this->_envExec[j] = strcpy(this->_envExec[j],
+									(const char*)element.c_str());
 			j++;
 		}
 	}
@@ -132,11 +136,13 @@ void	CGIprocess::_createArgs(Request &req)
 		i++;
 
 		this->_args[0] = new char[this->_cgiPath.size() + 1];
-		this->_args[0] = strcpy(this->_args[0], (const char*)this->_cgiPath.c_str());
+		this->_args[0] = strcpy(this->_args[0],
+							(const char*)this->_cgiPath.c_str());
 		i++;
 
 		this->_args[1] = new char[this->_scriptPath.size() + 1];
-		this->_args[1] = strcpy(this->_args[1], (const char*)this->_scriptPath.c_str());
+		this->_args[1] = strcpy(this->_args[1],
+							(const char*)this->_scriptPath.c_str());
 		this->_args[2] = NULL;
 	}
 	catch (std::bad_alloc &e)
@@ -227,6 +233,7 @@ static std::string getFileDirectory(const std::string& filePath) {
 void	CGIprocess::runCGI(Request &req, const Route &target)
 {
 	this->c = false;
+	this->_exitStatus = 0;
 
 	this->_setupEnv(req, target);
 	this->_createArgs(req);
@@ -272,7 +279,8 @@ void	CGIprocess::runCGI(Request &req, const Route &target)
 			{
 				throw ErrorCGI();
 			}
-			this->_exitStatus = execve(this->_args[0], this->_args, this->_envExec);
+			this->_exitStatus = execve(this->_args[0], this->_args,
+									this->_envExec);
 			throw ErrorCGI();
 		}
 		else

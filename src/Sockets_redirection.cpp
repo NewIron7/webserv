@@ -34,7 +34,6 @@ void	Sockets::_processRedirection(const ConfigurationObject &currentConfig)
 
 	realTarget.empty = true;
 
-	//std::cout << "REDIRECTION*************" << std::endl;
 	this->_getRealRoute(currentConfig, targetTmp, realTarget, sizeRoute);
 	realTarget.printRoute();
 	if (realTarget.empty == false && realTarget.redirection.empty() == false)

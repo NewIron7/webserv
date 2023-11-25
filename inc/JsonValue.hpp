@@ -6,7 +6,7 @@
 /*   By: hboissel <hboissel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/09 14:31:23 by hboissel          #+#    #+#             */
-/*   Updated: 2023/11/14 06:53:45 by hboissel         ###   ########.fr       */
+/*   Updated: 2023/11/25 09:00:55 by hboissel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,8 +49,8 @@ class JsonValue {
 
         static void printJsonValueHelper(const JsonValue& value,
             int indentation);
-        static void printJsonObject(const std::map<std::string, JsonValue>& object,
-            int indentation);
+        static void printJsonObject(const std::map<std::string,
+				JsonValue>& object, int indentation);
         static void printJsonArray(const std::vector<JsonValue>& array,
             int indentation);
         static void printIndentation(int indentation);

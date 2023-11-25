@@ -270,8 +270,10 @@ void	Request::_checkHost(void)
 	std::string	host = "HOST";
 	if (this->_headers.find(host) == this->_headers.end())
 	{
-		//if (this->_pVersion.compare("HTTP/1.1") == 0)
-		this->setCodeMsg(411, "Wrong http version, should be HTTP/1.1");
+		if (this->_pVersion.compare("HTTP/1.1") == 0)
+			this->setCodeMsg(400, "Wrong request, HOST header MUST be set");
+		else
+			this->setCodeMsg(400, "Wrong http version, should be HTTP/1.1");
 	}
 	else
 	{
@@ -358,7 +360,6 @@ void	Request::_getHeaders(std::string &r)
 		return ;
 	this->_checkHost();
 	this->_body = r;
-	//std::cout << "Body:\n" << this->_body << std::endl;
 }
 
 Request::Request(std::string r): _port(80), _errorCode(0), _errorMsg("Error")

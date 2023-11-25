@@ -39,9 +39,9 @@ int	main(int argc, char **argv)
 
 		init_signal();
 
-		TcpServer test(config);
-		test.create();
-		test.run();
+		TcpServer server(config);
+		server.create();
+		server.run();
 	}
 	catch(const ErrorCGI& e)
 	{
