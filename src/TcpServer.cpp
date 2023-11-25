@@ -113,29 +113,22 @@ void	TcpServer::_add_client(const int &fdServer)
 
 void	TcpServer::_remove_client(Sockets &client)
 {
-	int	inFd = client.cgi.fds[0];
-	int	outFd = client.cgi.fds[1];
+	if (this->_streams.find(client.socket) != this->_streams.end())
+	{
+		this->_endCGI(&client);
 
-	if (this->_CGIstreams.find(inFd) != this->_CGIstreams.end())
-	{
-		this->_remove_cgi(client, 0);
-	}
-	if (this->_CGIstreams.find(outFd) != this->_CGIstreams.end())
-	{
-		this->_remove_cgi(client, 1);
-	}
-	if (epoll_ctl(this->_epfd, EPOLL_CTL_DEL, client.socket,
-				&client.event) == -1)
-	{
-		if (this->_streams.find(client.socket) != this->_streams.end())
+		if (epoll_ctl(this->_epfd, EPOLL_CTL_DEL, client.socket,
+					&client.event) == -1)
+		{
 			this->_streams.erase(client.socket);
 
-		std::cerr << "Error while deleting client from epoll" << std::endl;
-		throw InternalError();
-	}
+			std::cerr << "Error while deleting client from epoll" << std::endl;
+			throw InternalError();
+		}
 
-	if (this->_streams.find(client.socket) != this->_streams.end())
 		this->_streams.erase(client.socket);
+	}
+	
 }
 
 static void extractHostAndPort(const std::string& text, std::string& host, unsigned int& port) {

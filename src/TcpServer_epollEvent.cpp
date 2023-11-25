@@ -32,56 +32,57 @@ void	TcpServer::_processEPOLLOUT(struct epoll_event &ev)
 
 		return ;
 	}
+    else if (this->_streams.find(ev.data.fd) != this->_streams.end())
+    {
+        Sockets	&client = this->_streams[ev.data.fd];
 
-	Sockets	&client = this->_streams[ev.data.fd];
+        if (client.resSent || client.reqGot == false || client.CGIrun)
+            return ;
 
+        if (client.resGen == false)
+        {
+            std::cout << "\033[35m[] Request ->\033[0m" << std::endl;
+            std::cout << "\033[2m" << client.request << "\033[0m" << std::endl;
+            std::cout << "\033[33m[+] Generating response\033[0m" << std::endl;
 
-	if (client.resSent || client.reqGot == false || client.CGIrun)
-		return ;
-
-	if (client.resGen == false)
-	{
-		std::cout << "\033[35m[] Request ->\033[0m" << std::endl;
-		std::cout << "\033[2m" << client.request << "\033[0m" << std::endl;
-		std::cout << "\033[33m[+] Generating response\033[0m" << std::endl;
-
-		client.process();
-		if (client.CGIrun)
-		{
-            try
+            client.process();
+            if (client.CGIrun)
             {
-                if (client.cgi.step)
-				    this->_add_cgi(client, 1);
-                else
-                    this->_add_cgi(client, 0);
+                try
+                {
+                    if (client.cgi.step)
+                        this->_add_cgi(client, 1);
+                    else
+                        this->_add_cgi(client, 0);
+                }
+                catch(const std::exception& e)
+                {
+                    this->_endCGI(&client);
+                }
+                return ;
             }
-            catch(const std::exception& e)
-            {
-                this->_endCGI(&client);
-            }
-			return ;
-		}
 
-		client.resGen = true;
-		client.request.clear();
+            client.resGen = true;
+            client.request.clear();
 
-		std::cout << "\033[35m[] Response ->\033[0m" << std::endl;
-		std::cout << "\033[2m" << client.response << "\033[0m" << std::endl;
-	}
-	else
-		client.request.clear();
+            std::cout << "\033[35m[] Response ->\033[0m" << std::endl;
+            std::cout << "\033[2m" << client.response << "\033[0m" << std::endl;
+        }
+        else
+            client.request.clear();
 
-	int	err = write(client.socket, client.response.c_str(),
-			client.response.size());
-	if (err == -1 && (err == 0 && client.response.empty() == false))
-	{
-		std::cout << "\033[35m[#] Failed to sent response\033[0m" << std::endl;
-	}
-	else
-	{
-		client.resSent = true;
-		std::cout << "\033[32m[+] Response succesfully sent to client\033[0m" << std::endl;
-	}
+        int	err = write(client.socket, client.response.c_str(),
+                client.response.size());
+        if (err == -1 && (err == 0 && client.response.empty() == false))
+        {
+            std::cout << "\033[35m[#] Failed to sent response\033[0m" << std::endl;
+        }
+        else
+        {
+            client.resSent = true;
+            std::cout << "\033[32m[+] Response succesfully sent to client\033[0m" << std::endl;
+        }
+    }
 }
 
 void	TcpServer::_processEPOLLIN(struct epoll_event &ev)
@@ -112,7 +113,7 @@ void	TcpServer::_processEPOLLIN(struct epoll_event &ev)
 			this->_endCGI(client);
 		}
 	}
-	else
+	else if (this->_streams.find(ev.data.fd) != this->_streams.end())
 	{
 		Sockets	&client = this->_streams[ev.data.fd];
 
@@ -155,7 +156,7 @@ void	TcpServer::_processEPOLLERR(struct epoll_event &ev)
         
 		
 	}
-	else
+	else if (this->_CGIstreams.find(ev.data.fd) != this->_CGIstreams.end())
 	{
 		Sockets *client = this->_CGIstreams[ev.data.fd];
 		this->_endCGI(client);
