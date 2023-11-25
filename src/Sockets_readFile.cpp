@@ -27,7 +27,18 @@ static bool isDirectory(const std::string& filename) {
 
 std::string	Sockets::_processDirListing(const std::string &path)
 {
-	std::string result;
+	if (!hasReadPermission(path)) {
+		this->oRequest.setCodeMsg(403, "The program doesnt have the permission to open this directory");
+		throw Sockets::Error();
+	}
+	
+	std::string result = "<html><head><title>Directory Listing</title>";
+    result += "<style>body { font-family: Arial, sans-serif; background-color: #f4f4f4; }";
+    result += "h1 { color: #333; text-align: center; } ul { list-style-type: none; margin: 0; padding: 0; }";
+    result += "li { padding: 8px; border-bottom: 1px solid #ccc; background-color: #fff; }";
+    result += "a { text-decoration: none; display: block; padding: 8px 16px; color: #000; }";
+    result += "a:hover { background-color: #f4f4f4; } .dir { color: #007bff; } .file { color: #28a745; }</style>";
+    result += "</head><body><h1>Directory Listing</h1><ul>";
     DIR* dir;
     struct dirent* entry;
     
@@ -36,8 +47,20 @@ std::string	Sockets::_processDirListing(const std::string &path)
     if ((dir = opendir(dirPath)) != NULL) {
         while ((entry = readdir(dir)) != NULL) {
             if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
+                result += "<li>";
+                result += "<a href='";
                 result += entry->d_name;
-                result += "\n";
+                if (entry->d_type == DT_DIR) {
+                    result += "/";
+                	result += "' class='dir'>";
+                } else {
+                    result += "' class='file'>";
+                }
+                result += entry->d_name;
+				if (entry->d_type == DT_DIR) {
+                    result += "/";
+                }
+                result += "</a></li>";
             }
         }
         closedir(dir);
@@ -45,6 +68,9 @@ std::string	Sockets::_processDirListing(const std::string &path)
         this->oRequest.setCodeMsg(500, "Error while reading the directory");
 		throw Sockets::Error();
     }
+    
+    result += "</ul></body></html>";
+    
     return result;
 }
 
@@ -67,7 +93,7 @@ std::string Sockets::_readFile(const std::string& filename, const Route &target)
 	}
 
 	if (!hasReadPermission(filename)) {
-		req.setCodeMsg(404, "The program doesnt have the permission to open this file");
+		req.setCodeMsg(403, "The program doesnt have the permission to open this file");
 		throw Sockets::Error();
 	}
 

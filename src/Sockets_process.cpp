@@ -107,14 +107,23 @@ std::string Sockets::_getExtFile(const std::string &filename)
 
 	// Get the position of the last dot in the filename
 	size_t dotPosition = filename.find_last_of('.');
+	size_t dirPosition = filename.find_last_of('/');
 
-	if (dotPosition != std::string::npos) {
+	if (dotPosition != std::string::npos && dotPosition > dirPosition) {
 		// Extract the file extension using substr() from the dot position
 		fileExtension = filename.substr(dotPosition);
 	} else {
 		fileExtension = "";
 	}
 	return (fileExtension);
+}
+
+static bool isDirectory(const std::string& filename) {
+    struct stat buffer;
+	if (stat(filename.c_str(), &buffer) != 0) {
+		return false;
+	}
+	return S_ISDIR(buffer.st_mode);
 }
 
 std::string Sockets::_generateHTTPResponseHeader(const Route &target) {
@@ -124,8 +133,12 @@ std::string Sockets::_generateHTTPResponseHeader(const Route &target) {
 	response << "HTTP/1.1 " << this->oRequest.getErrorCode() << " "
 		<< DefaultErrorPages::statusMap[this->oRequest.getErrorCode()] << "\r\n";
 
+	
 	std::string ext = this->_getExtFile(target.location);
-	if (ext.empty())
+	if (ext.empty() && target.directoryListing
+		&& isDirectory(target.location))
+		ext = ".html";
+	else if (ext.empty())
 		ext = ".txt";
 	// Headers
 	response << "Content-Type: " << DefaultErrorPages::getContentType(ext) << "\r\n";
