@@ -54,7 +54,7 @@ void	TcpServer::_add_cgi(Sockets &client, unsigned int nb)
 				&cgi.event[nb]) == -1)
 	{
 		this->_CGIstreams.erase(cgi.fds[nb]);
-        std::cout << "Error while addind cgi to epoll" << std::endl;
+        std::cerr << "Error while addind cgi to epoll" << std::endl;
 		throw InternalError();
 	}
 }
@@ -71,7 +71,7 @@ void	TcpServer::_remove_cgi(Sockets &client, unsigned int nb)
 	if ((cgi.c == false) && (epoll_ctl(this->_epfd, EPOLL_CTL_DEL, cgi.fds[nb],
 					&cgi.event[nb]) == -1))
 	{
-		std::cout << "Error while removing cgi from epoll" << std::endl;
+		std::cerr << "Error while removing cgi from epoll" << std::endl;
 		throw InternalError();
 	}
 }

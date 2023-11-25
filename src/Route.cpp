@@ -11,7 +11,7 @@
 /* ************************************************************************** */
 #include "Route.hpp"
 
-Route::Route(void): location("."), directoryListing(false), uploadedFile(false),
+Route::Route(void): location("."), directoryListing(false), directoryAdding(false), uploadedFile(false),
 	empty(false), dir(false)
 {
 	return ;
@@ -32,6 +32,7 @@ void Route::printRoute() const {
 	std::cout << "Redirection: " << redirection << std::endl;
 	std::cout << "Location: " << location << std::endl;
 	std::cout << "Directory Listing: " << (directoryListing ? "true" : "false") << std::endl;
+	std::cout << "Directory Adding: " << (directoryAdding ? "true" : "false") << std::endl;
 	std::cout << "Root: " << root << std::endl;
 	std::cout << "CGI Path: " << cgiPath << std::endl;
 	std::cout << "CGI Extension: " << cgiExtension << std::endl;
@@ -47,6 +48,7 @@ Route& Route::operator=(const Route& other) {
 		this->redirection = other.redirection;
 		this->location = other.location;
 		this->directoryListing = other.directoryListing;
+		this->directoryAdding = other.directoryAdding;
 		this->root = other.root;
 		this->cgiPath = other.cgiPath;
 		this->cgiExtension = other.cgiExtension;

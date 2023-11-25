@@ -68,9 +68,9 @@ Route	Sockets::_getRealTarget(Request &req, const ConfigurationObject &currentCo
 	{
 
 		std::string dirListAdd = targetTmp.substr(sizeRoute);
-		if (dirListAdd.size() && realTarget.directoryListing == false && dirListAdd != "/")
+		if (dirListAdd.size() && realTarget.directoryAdding == false && dirListAdd != "/")
 		{
-			req.setCodeMsg(403, "Directory listing has been disactivated in the config");
+			req.setCodeMsg(403, "Directory adding has been disactivated in the config");
 			throw Sockets::Error();
 		}
 		else
@@ -143,7 +143,8 @@ void	Sockets::_getRootFileDir(Route &target, bool isGet)
 {
 	if (target.dir)
 	{
-		if (target.root.empty() && isGet)
+		if (target.root.empty() && isGet
+			&& target.directoryListing == false)
 		{
 			this->oRequest.setCodeMsg(404, "No ressource");
 			throw Sockets::Error();
@@ -160,7 +161,7 @@ void	Sockets::_getRootFileDir(Route &target, bool isGet)
 void	Sockets::_processGET(const ConfigurationObject &currentConfig)
 {
 	Request	&req = this->oRequest;
-	//get realTarget(path) and check if directoryListing
+	//get realTarget(path) and check if directoryAdding
 	Route	target = this->_getRealTarget(req, currentConfig);
 
 	this->_checkMethodAuthorized(target, "GET");
@@ -176,7 +177,7 @@ void	Sockets::_processGET(const ConfigurationObject &currentConfig)
 	else
 	{
 		//get hold of content file
-		this->response = this->_readFile(target.location);
+		this->response = this->_readFile(target.location, target);
 		//generate proper header
 		this->response = this->_generateHTTPResponseHeader(target) + this->response;
 	}
@@ -317,12 +318,9 @@ void	Sockets::process(void)
 				this->oRequest.getErrorCode(), this->oRequest.getErrorMsg());
 		return ;
 	}
-	//this->oRequest.printAttributes();
 	this->oRequest.setErrorCode(200);
 
 	const ConfigurationObject &currentConfig = this->_getCurrentConfig();
-	//std::cout << "***Config found: " << std::endl;
-	//currentConfig.printParameters();
 	try
 	{
 		this->_processMethod(currentConfig);

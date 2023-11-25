@@ -24,19 +24,12 @@ class JsonValue {
 		JsonValue();
 
 		std::map<std::string, JsonValue> getObject() const;
-
 		std::vector<JsonValue> getArray() const;
-
 		std::string getString() const;
-
 		void setObject(const std::map<std::string, JsonValue>& object);
-
 		void setArray(const std::vector<JsonValue>& array);
-
 		void setString(const std::string& value);
-
         void printJsonValue(int indentation = 0);
-
 		bool isObject(void) const;
 		bool isString(void) const;
 		bool isArray(void) const;

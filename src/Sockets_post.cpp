@@ -179,7 +179,7 @@ void	Sockets::_parseContentMultipartFormData(const std::string& content,
 
 		this->_createFile(location);
 		this->_appendToFile(location, value);
-		std::cout << location << " created" << std::endl;
+		std::cerr << location << " created" << std::endl;
 	}
 	else
 	{
@@ -266,7 +266,7 @@ void	Sockets::_processUpload(const Route &target)
 
 		std::string boundary = this->_getBoundaryFromContentType(contentType);
 
-		std::cout << this->oRequest.getBody().size() << std::endl;
+		//std::cout << this->oRequest.getBody().size() << std::endl;
 
 		this->_parseMultipartFormData(this->oRequest.getBody(), boundary, target);
 

@@ -22,6 +22,7 @@
 # include <cerrno>
 # include <fcntl.h>
 # include <cstdlib>
+# include <dirent.h>
 
 # include "Request.hpp"
 # include "InternalError.hpp"
@@ -84,7 +85,7 @@ class Sockets
 				const std::string m);
 		Route		_getRealTarget(Request &req,
 				const ConfigurationObject &currentConfig);
-		std::string	_readFile(const std::string& filename);
+		std::string	_readFile(const std::string& filename, const Route &target);
 
 		std::string _generateHTTPResponseHeader(const Route &target);
 		std::string _generateHTTPResponseHeaderPOST(void);
@@ -116,6 +117,7 @@ class Sockets
 		void		_getRealRoute(const ConfigurationObject &currentConfig, 
 				const std::string &targetTmp, Route &realTarget,
 				std::size_t &sizeRoute);
+		std::string	_processDirListing(const std::string &path);
 
 		class Error : public std::exception
 		{

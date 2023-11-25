@@ -17,17 +17,53 @@ static bool hasReadPermission(const std::string& filename) {
 	return (access(filename.c_str(), R_OK) == 0);
 }
 
-std::string Sockets::_readFile(const std::string& filename) {
+static bool isDirectory(const std::string& filename) {
+    struct stat buffer;
+	if (stat(filename.c_str(), &buffer) != 0) {
+		return false;
+	}
+	return S_ISDIR(buffer.st_mode);
+}
+
+std::string	Sockets::_processDirListing(const std::string &path)
+{
+	std::string result;
+    DIR* dir;
+    struct dirent* entry;
+    
+    const char* dirPath = path.c_str();
+    
+    if ((dir = opendir(dirPath)) != NULL) {
+        while ((entry = readdir(dir)) != NULL) {
+            if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
+                result += entry->d_name;
+                result += "\n";
+            }
+        }
+        closedir(dir);
+    } else {
+        this->oRequest.setCodeMsg(500, "Error while reading the directory");
+		throw Sockets::Error();
+    }
+    return result;
+}
+
+std::string Sockets::_readFile(const std::string& filename, const Route &target) {
 	Request	&req = this->oRequest;
-	
+
 	if (!fileExists(filename)) {
 		req.setCodeMsg(404, "No ressource " + this->oRequest.getTarget());
 		throw Sockets::Error();
 	}
-
+	
 	if (!isRegularFile(filename)) {
-		req.setCodeMsg(404, "Not a file");
-		throw Sockets::Error();
+		if (target.directoryListing && isDirectory(filename))
+			return (this->_processDirListing(filename));
+		else
+		{
+			req.setCodeMsg(404, "Not a file");
+			throw Sockets::Error();
+		}
 	}
 
 	if (!hasReadPermission(filename)) {

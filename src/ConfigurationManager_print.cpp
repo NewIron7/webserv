@@ -16,16 +16,16 @@ void ConfigurationManager::printConfig(void) const {
 
 	for (std::map<std::string, std::vector<ConfigurationObject> >::const_iterator
         it = this->config.begin(); it != this->config.end(); ++it) {
-		std::cout << "	Key: " << it->first << std::endl;
+		std::cerr << "	Key: " << it->first << std::endl;
 
 		const std::vector<ConfigurationObject>& vec = it->second;
 		for (size_t i = 0; i < vec.size(); ++i) {
-			std::cout << "	ConfigurationObject " << i + 1 << ":" << std::endl;
+			std::cerr << "	ConfigurationObject " << i + 1 << ":" << std::endl;
 			vec[i].printParameters(); // Utilize the printParameters method
-			std::cout << std::endl;
+			std::cerr << std::endl;
 		}
 
-		std::cout << std::endl;
+		std::cerr << std::endl;
 	}
 }
 

@@ -67,6 +67,13 @@ void	ConfigurationManager::_getContentRoute(Route &routeRef,
 			else if (it->second.getString() == "true")
 				routeRef.directoryListing = true;
 		}
+		else if (it->first == "directoryAdding")
+		{
+			if (it->second.getString() != "true" && it->second.getString() != "false")
+				throw ConfigurationManager::ErrorUserConfig();
+			else if (it->second.getString() == "true")
+				routeRef.directoryAdding = true;
+		}
 		else if (it->first == "root")
 		{
 			routeRef.root = it->second.getString();

@@ -29,6 +29,7 @@ class Route
 		std::string					redirection;
 		std::string					location;
 		bool						directoryListing;
+		bool						directoryAdding;
 		std::string					root;
 		std::string					cgiPath;
 		std::string					cgiExtension;

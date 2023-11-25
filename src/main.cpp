@@ -27,7 +27,7 @@ int	main(int argc, char **argv)
 {
 	if (argc != 2)
 	{
-		std::cout << "Usage ./webserv [configFile]" << std::endl;
+		std::cerr << "Usage ./webserv [configFile]" << std::endl;
 		return (0);
 	}
 
