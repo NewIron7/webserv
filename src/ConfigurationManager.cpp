@@ -18,6 +18,11 @@ static std::string intToString(unsigned int number) {
 	return ss.str();
 }
 
+static bool fileExists(const std::string& filename) {
+	struct stat buffer;
+	return (stat(filename.c_str(), &buffer) == 0);
+}
+
 ConfigurationManager::ConfigurationManager(const std::string &filename) {
 	if (!loadConfigFile(filename)) {
 		// Handle error, maybe throw an exception or set default values
@@ -37,9 +42,14 @@ std::vector<ConfigurationObject>	&ConfigurationManager::getServersHostPort(
 }
 
 bool ConfigurationManager::loadConfigFile(const std::string& filename) {
+	if (!fileExists(filename)) {
+		std::cerr << filename << ": doesnt exist" << std::endl;
+		return false;
+	}
+
 	std::ifstream configFile(filename.c_str());
 	if (!configFile.is_open()) {
-		// Handle file not found or other errors
+		// other errors
 		std::cerr << "Error opening configuration file: " << filename << std::endl;
 		return false;
 	}

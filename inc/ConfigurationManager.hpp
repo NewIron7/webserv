@@ -19,6 +19,7 @@
 # include <map>
 # include <algorithm>
 # include <vector>
+# include <sys/stat.h>
 
 # include "JsonValue.hpp"
 # include "ConfigurationObject.hpp"
