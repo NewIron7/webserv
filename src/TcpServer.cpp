@@ -101,14 +101,14 @@ void	TcpServer::_add_client(const int &fdServer)
 
 	Sockets &client = this->_streams[clientFd];
 	client.setup(clientFd, fdServer, server.port, false, server.host, server.config);
-
 	if (epoll_ctl(this->_epfd, EPOLL_CTL_ADD, client.socket,
 				&client.event) == -1)
 	{
-		std::cout << "Error while addind client to epoll" << std::endl;
+		std::cerr << "Error while addind client to epoll" << std::endl;
 		this->_streams.erase(client.socket);
 		throw InternalError();
 	}
+
 }
 
 void	TcpServer::_remove_client(Sockets &client)
@@ -124,7 +124,6 @@ void	TcpServer::_remove_client(Sockets &client)
 	{
 		this->_remove_cgi(client, 1);
 	}
-	
 	if (epoll_ctl(this->_epfd, EPOLL_CTL_DEL, client.socket,
 				&client.event) == -1)
 	{
@@ -170,16 +169,24 @@ void	TcpServer::_createServer(std::string host, unsigned int port,
 	Sockets &server = this->_streams[serverFd];
 	if (bind(server.socket, (struct sockaddr *)&server.info,
 				server.size) == -1)
+	{
+		std::cerr << "ERROR while binding the server" << std::endl;
 		throw InternalError();
+	}
 	if (listen(server.socket, MAXIREQ) == -1)
+	{
+		std::cerr << "ERROR while starting listenning the server" << std::endl;
 		throw InternalError();
+	}
 
 	std::cout << "\033[44m@Server [ " << server.socket << " ] " << server.host
 		<< ":" << server.port << "\033[0m" << std::endl;
 	if (epoll_ctl(this->_epfd, EPOLL_CTL_ADD, server.socket,
 				&(this->_streams[server.socket].event)) == -1)
+	{
+		std::cerr << "ERROR while adding the server to epoll" << std::endl;
 		throw InternalError();
-
+	}
 }
 
 void	TcpServer::create(void)

@@ -49,7 +49,7 @@ int	main(int argc, char **argv)
 	}
 	catch(const std::exception& e)
 	{
-		std::cerr << "\033[41m" << e.what() << "\033[0m" << std::endl;;
+		std::cerr << "\033[41m" << e.what() << "\033[0m" << std::endl;
 	}
 	return (0);
 }

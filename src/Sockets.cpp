@@ -43,7 +43,7 @@ void Sockets::printAttributes() {
 }
 
 Sockets::Sockets(void):
-	main(false), server(-1), socket(-1), host("0.0.0.0"), port(-1), reqGot(false), resGen(false)
+	main(false), server(-1), socket(-1), host("0.0.0.0"), port(0), reqGot(false), resGen(false)
 	,resSent(false), CGIrun(false)
 {
 	this->size = sizeof(this->info);
@@ -57,12 +57,17 @@ Sockets::Sockets(void):
 
 Sockets::~Sockets(void)
 {
-	if (this->socket != -1)
+	if (this->socket > 2)
 	{
 		//std::cout << "@Socket of fd [ " << this->socket << " ] closed" << std::endl;
 		close(this->socket);
 	}
 	return ;
+}
+
+Sockets::Sockets(const Sockets &src)
+{
+	*this = src;
 }
 
 Sockets	&Sockets::operator=(Sockets const &rhs)
@@ -72,6 +77,7 @@ Sockets	&Sockets::operator=(Sockets const &rhs)
 	this->socket = rhs.socket;
 	this->info = rhs.info;
 	this->size = rhs.size;
+	this->host = rhs.host;
 	this->port = rhs.port;
 	this->event = rhs.event;
 	this->request = rhs.request;
@@ -80,6 +86,9 @@ Sockets	&Sockets::operator=(Sockets const &rhs)
 	this->response = rhs.response;
 	this->resGen = rhs.resGen;
 	this->resSent = rhs.resSent;
+	this->CGIrun = rhs.CGIrun;
+	this->cgi = rhs.cgi;
+	this->config = rhs.config;
 
 	return (*this);
 }

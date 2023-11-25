@@ -144,7 +144,16 @@ void	TcpServer::_processEPOLLERR(struct epoll_event &ev)
 		std::cout << "\033[31m[-] [ "
 			<< client.socket << " ] error threrefore got disconnected\033[0m"
 			<< std::endl;
-		this->_remove_client(client);
+        try
+        {
+           this->_remove_client(client);
+        }
+        catch(const std::exception& e)
+        {
+            std::cerr << "\033[41m" << e.what() << "\033[0m" << std::endl;
+        }
+        
+		
 	}
 	else
 	{
@@ -160,7 +169,14 @@ void	TcpServer::_processEPOLLHUP(struct epoll_event &ev)
 		Sockets &client = this->_streams[ev.data.fd];
 		std::cout << "\033[31m[-] [ " << client.socket << " ] disconnected\033[0m"
 			<< std::endl;
-		this->_remove_client(client);
+		try
+        {
+           this->_remove_client(client);
+        }
+        catch(const std::exception& e)
+        {
+            std::cerr << "\033[41m" << e.what() << "\033[0m" << std::endl;
+        }
 	}
 	else if (this->_CGIstreams.find(ev.data.fd) != this->_CGIstreams.end())
 	{

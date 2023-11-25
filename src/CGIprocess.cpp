@@ -49,7 +49,10 @@ void	CGIprocess::addHeaders(void)
 
 CGIprocess::CGIprocess(void): done(false), c(true), error(0),
 	_envExec(NULL), _args(NULL), _pid(0), _exitStatus(0)
-{}
+{
+	this->fds[1] = -1;
+	this->fds[0] = -1;
+}
 
 CGIprocess::~CGIprocess(void)
 {

@@ -34,6 +34,7 @@ class Sockets
 	public:
 		Sockets(void);
 		~Sockets(void);
+		Sockets(const Sockets &src);
 
 		Sockets	&operator=(Sockets const &src);
 
