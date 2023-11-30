@@ -14,12 +14,13 @@ chunked_data.append(b'0\r\n\r\n')  # Add the final chunk indicating the end
 # Set up the connection
 conn = http.client.HTTPConnection('127.0.0.1:8080')
 headers = {
-    'Transfer-Encoding': 'chunked'
+    'Transfer-Encoding': 'chunked',
+    'Content-Type': 'text/plain'
 }
 
 try:
     # Send the request
-    conn.request('POST', '/', headers=headers)
+    conn.request('POST', '/test.txt', headers=headers)
 
     # Send chunked data
     for chunk in chunked_data:
@@ -28,7 +29,7 @@ try:
     # Get the response
     response = conn.getresponse()
 
-    if response.status == 200:
+    if response.status >= 200 & response.status < 300:
         print("Request successful. Response:")
         print(response.read().decode('utf-8'))
     else:
